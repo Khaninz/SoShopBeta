@@ -64,8 +64,8 @@ public class MainActivity extends ActionBarActivity
         Intent intent = new Intent(this, LoginActivity.class);
         //add flag to intent, so user can't use 'back' to the main activity
         //read more about Flag in the api intent api document
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }
 

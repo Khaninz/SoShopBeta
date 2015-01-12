@@ -13,10 +13,17 @@
     <string name="signin_text_label">Please Sign in</string>
     <string name="sign_in_button_label">Sign In</string>
     <string name="password_edit_text_hint">Password</string>
-    <string name="username_edit_text_hint">User name</string>
+    <string name="username_edit_text_hint">Email</string>
     <string name="sign_up_label">Sign Up!</string>
     <string name="login_error_message">Please make sure you enter username and password</string>
-    <string name="login_error_title">Error loggin in</string>
+    <string name="login_error_title">Error logging in</string>
     <string name="action_logout">Log out</string>
+    <string name="title_activity_sign_up">SignUpActivity</string>
+    <string name="sign_up_header">Sign Up</string>
+    <string name="sign_up_button_label">Sign Up!</string>
+    <string name="confirm_password_edit_text_hint">Confirm password</string>
+    <string name="singup_error_title">Oops!</string>
+    <string name="signup_error_message">There is an erro signing up.</string>
+    <string name="confirm_password_not_match_alert_message">Confirm password does not match</string>
 
 </resources>

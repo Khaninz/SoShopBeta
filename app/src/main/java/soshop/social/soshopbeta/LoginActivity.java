@@ -18,7 +18,7 @@ import com.parse.ParseUser;
 
 public class LoginActivity extends ActionBarActivity {
 
-    protected EditText mUserNameEditText;
+    protected EditText mEmaiAsUserEditText;
     protected EditText mPasswordEditText;
     protected Button mLogInButton;
     protected TextView mSignUpTextView;
@@ -28,15 +28,22 @@ public class LoginActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        mUserNameEditText = (EditText) findViewById(R.id.userNameEditText);
+        //Remove ActionBar
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
+
+
+        mEmaiAsUserEditText = (EditText) findViewById(R.id.emailAsUserNameEditText);
         mPasswordEditText = (EditText) findViewById(R.id.passwordEditText);
-        mLogInButton = (Button) findViewById(R.id.logInButton);
+        mLogInButton = (Button) findViewById(R.id.signUpButton);
         mSignUpTextView = (TextView) findViewById(R.id.signUpTextView);
 
         mLogInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String username = mUserNameEditText.getText().toString();
+                String username = mEmaiAsUserEditText.getText().toString().toLowerCase();
                 String password = mPasswordEditText.getText().toString();
 
                 username = username.trim();
@@ -84,6 +91,14 @@ public class LoginActivity extends ActionBarActivity {
 
 
                 }
+            }
+        });
+
+        mSignUpTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+                startActivity(intent);
             }
         });
 
