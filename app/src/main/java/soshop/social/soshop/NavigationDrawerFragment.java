@@ -1,4 +1,4 @@
-package soshop.social.soshopbeta;
+package soshop.social.soshop;
 
 import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;

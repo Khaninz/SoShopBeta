@@ -1,4 +1,4 @@
-package soshop.social.soshopbeta;
+package soshop.social.soshop;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

@@ -1,4 +1,4 @@
-package soshop.social.soshopbeta;
+package soshop.social.soshop;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -17,9 +17,9 @@ import android.view.ViewGroup;
 
 import com.parse.ParseUser;
 
-import soshop.social.soshopbeta.Fragment.InviteFriendsFragment;
-import soshop.social.soshopbeta.Fragment.MainFeedFragment;
-import soshop.social.soshopbeta.Fragment.SettingsFragment;
+import soshop.social.soshop.Fragment.InviteFriendsFragment;
+import soshop.social.soshop.Fragment.MainFeedFragment;
+import soshop.social.soshop.Fragment.SettingsFragment;
 
 
 public class MainActivity extends ActionBarActivity

@@ -1,10 +1,12 @@
-package soshop.social.soshopbeta;
+package soshop.social.soshop;
 
 import android.app.Application;
 
 import com.parse.Parse;
 import com.parse.ParseInstallation;
 import com.parse.ParseUser;
+
+import soshop.social.soshop.Utils.ParseConstants;
 
 /**
  * Created by Ninniez on 1/11/2015.

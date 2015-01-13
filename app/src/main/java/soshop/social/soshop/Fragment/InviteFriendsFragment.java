@@ -1,4 +1,4 @@
-package soshop.social.soshopbeta.Fragment;
+package soshop.social.soshop.Fragment;
 
 
 import android.os.Bundle;
@@ -7,15 +7,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import soshop.social.soshopbeta.R;
+import soshop.social.soshop.R;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class SettingsFragment extends android.support.v4.app.Fragment {
+public class InviteFriendsFragment extends android.support.v4.app.Fragment {
 
 
-    public SettingsFragment() {
+    public InviteFriendsFragment() {
         // Required empty public constructor
     }
 
@@ -24,7 +24,7 @@ public class SettingsFragment extends android.support.v4.app.Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_settings, container, false);
+        return inflater.inflate(R.layout.fragment_invite_friends, container, false);
     }
 
 
