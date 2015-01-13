@@ -17,6 +17,10 @@ import android.view.ViewGroup;
 
 import com.parse.ParseUser;
 
+import soshop.social.soshopbeta.Fragment.InviteFriendsFragment;
+import soshop.social.soshopbeta.Fragment.MainFeedFragment;
+import soshop.social.soshopbeta.Fragment.SettingsFragment;
+
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -73,9 +77,30 @@ public class MainActivity extends ActionBarActivity
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
+        android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        ActionBar actionBar = getSupportActionBar();
+
+
+//        fragmentTransaction.replace(R.id.container, PlaceholderFragment.newInstance(position +1));
+        switch (position) {
+            case 0:
+                actionBar.setTitle((R.string.title_section1));
+                fragmentTransaction.replace(R.id.container, new MainFeedFragment());
+                fragmentTransaction.commit();
+                break;
+            case 1:
+                actionBar.setTitle((R.string.title_section2));
+                fragmentTransaction.replace(R.id.container, new InviteFriendsFragment());
+                fragmentTransaction.commit();
+                break;
+            case 2:
+                actionBar.setTitle((R.string.title_section3));
+                fragmentTransaction.replace(R.id.container, new SettingsFragment());
+                fragmentTransaction.commit();
+                break;
+
+        }
     }
 
     public void onSectionAttached(int number) {
@@ -96,7 +121,7 @@ public class MainActivity extends ActionBarActivity
         ActionBar actionBar = getSupportActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
+//        actionBar.setTitle(mTitle);
     }
 
 
