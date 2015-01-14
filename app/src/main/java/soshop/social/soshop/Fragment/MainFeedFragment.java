@@ -2,11 +2,13 @@ package soshop.social.soshop.Fragment;
 
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
@@ -18,6 +20,7 @@ import com.parse.ParseUser;
 import java.util.ArrayList;
 import java.util.List;
 
+import soshop.social.soshop.PostActivity;
 import soshop.social.soshop.R;
 import soshop.social.soshop.Utils.ParseConstants;
 
@@ -27,8 +30,7 @@ import soshop.social.soshop.Utils.ParseConstants;
 public class MainFeedFragment extends android.support.v4.app.ListFragment {
 
     //member variable
-    protected List<ParseObject> mSoShopPost; // to store list of post after query.
-
+    protected Button mPostButton;
 
     public MainFeedFragment() {
         // Required empty public constructor
@@ -39,7 +41,19 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_main_feed, container, false);
+
+        View rootView = inflater.inflate(R.layout.fragment_main_feed, container, false);
+
+        mPostButton = (Button) rootView.findViewById(R.id.postButton);
+        mPostButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), PostActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        return rootView;
 
 
     }
@@ -60,11 +74,9 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
         ParseQuery<ParseObject> userPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
         userPostQuery.whereEqualTo(ParseConstants.KEY_SENDER_IDS, ParseUser.getCurrentUser().getObjectId());
 
-
         //query for friend of user post.
         ParseQuery<ParseObject> userFriendsPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
         userFriendsPostQuery.whereEqualTo(ParseConstants.KEY_RECIPIENT_IDS, ParseUser.getCurrentUser().getObjectId());
-
 
         // add or operator
         List<ParseQuery<ParseObject>> queries = new ArrayList<ParseQuery<ParseObject>>();
@@ -84,8 +96,6 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
                     //Query Success
                     Toast.makeText(getActivity(), "Query success, " + soShopPostObjects.size() + " objects get", Toast.LENGTH_LONG).show();
 
-
-
                     String[] userCaption = new String[soShopPostObjects.size()];
                     int i = 0;
                     for (ParseObject soShopPostObject: soShopPostObjects){
@@ -93,10 +103,17 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
                         i++;
                     }
 
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(getListView().getContext(), android.R.layout.simple_list_item_1, userCaption);
-                    setListAdapter(adapter);
-                }
+                    //add condition so list view adapter does not create every time it is resume , WHICH CAN PREVENT APP CRASH.
+                    if(getListView().getAdapter()==null) {
 
+                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getListView().getContext(), android.R.layout.simple_list_item_1, userCaption);
+                        setListAdapter(adapter);
+                    } else {
+
+                        ArrayAdapter<String> adapter = (ArrayAdapter<String>) getListView().getAdapter();
+                        adapter.notifyDataSetChanged();
+                    }
+                }
 
             }
         });
