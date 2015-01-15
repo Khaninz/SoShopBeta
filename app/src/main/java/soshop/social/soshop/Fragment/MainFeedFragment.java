@@ -9,12 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseRelation;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
@@ -31,6 +31,9 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
 
     //member variable
     protected Button mPostButton;
+
+    protected ParseUser mCurrentUser;
+    protected ParseRelation mFriendsRelation;
 
     public MainFeedFragment() {
         // Required empty public constructor
@@ -62,21 +65,39 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
     public void onResume() {
         super.onResume();
 
-        retrieveMainFeed();
+        try {
+            retrieveMainFeed();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
 
 
-    private void retrieveMainFeed() {
+    private void retrieveMainFeed() throws ParseException {
+
+        mCurrentUser = ParseUser.getCurrentUser();
+        mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_FRIENDS_RELATION);
+
+
+        ArrayList<ParseUser> friends = (ArrayList<ParseUser>) mFriendsRelation.getQuery().find(); //program auto add throws for getQuery.find
+        ArrayList<String> friendsIds = new ArrayList<>(friends.size()); //create ArrayList String to be used in queries
+        int i = 0;
+        for (ParseUser friend : friends){ //get each friend id to the list
+            friendsIds.add(i, friend.getObjectId());
+            i++;
+        }
+
 
         // 2 conditions in query have to work as Or operator
         //query for user's post
         ParseQuery<ParseObject> userPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
-        userPostQuery.whereEqualTo(ParseConstants.KEY_SENDER_IDS, ParseUser.getCurrentUser().getObjectId());
+        userPostQuery.whereEqualTo(ParseConstants.KEY_SENDER_IDS, mCurrentUser.getObjectId());
 
         //query for friend of user post.
         ParseQuery<ParseObject> userFriendsPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
-        userFriendsPostQuery.whereEqualTo(ParseConstants.KEY_RECIPIENT_IDS, ParseUser.getCurrentUser().getObjectId());
+        userFriendsPostQuery.whereEqualTo(ParseConstants.KEY_RECIPIENT_IDS, mCurrentUser.getObjectId());
+        userFriendsPostQuery.whereContainedIn(ParseConstants.KEY_SENDER_IDS, friendsIds ); // this is add to fix when post is still show when user unfriend the poster.
 
         // add or operator
         List<ParseQuery<ParseObject>> queries = new ArrayList<ParseQuery<ParseObject>>();

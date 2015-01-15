@@ -177,8 +177,6 @@ public class PostActivity extends ActionBarActivity {
 
                     }
 
-
-
                     //create Parse Object for post.
                     ParseObject soShopPost = new ParseObject(ParseConstants.CLASS_SOSHOPPOST);
 
