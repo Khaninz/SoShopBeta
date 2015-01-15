@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Toast;
+import android.widget.ListView;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -92,9 +92,9 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
         mainFeedQuery.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> soShopPostObjects, ParseException e) {
-                if (e == null){
+                    if (e == null){
                     //Query Success
-                    Toast.makeText(getActivity(), "Query success, " + soShopPostObjects.size() + " objects get", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(getActivity(), "Query success, " + soShopPostObjects.size() + " objects get", Toast.LENGTH_LONG).show();
 
                     String[] userCaption = new String[soShopPostObjects.size()];
                     int i = 0;
@@ -120,4 +120,6 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
 
 
     }
+
+
 }
