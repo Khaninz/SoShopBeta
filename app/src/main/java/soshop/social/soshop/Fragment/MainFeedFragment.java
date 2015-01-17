@@ -47,6 +47,7 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
 
         View rootView = inflater.inflate(R.layout.fragment_main_feed, container, false);
 
+        //START:Initialize the button for posting.
         mPostButton = (Button) rootView.findViewById(R.id.postButton);
         mPostButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,7 +56,7 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
                 startActivity(intent);
             }
         });
-
+        //END:Initialize the button for posting.
         return rootView;
 
 

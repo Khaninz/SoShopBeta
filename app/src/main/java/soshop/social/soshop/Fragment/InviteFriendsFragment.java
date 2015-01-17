@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -31,6 +32,9 @@ public class InviteFriendsFragment extends android.support.v4.app.ListFragment{
     //declare relation members to restore parse relations.
     protected ParseRelation<ParseUser> mFriendsRelation;
     protected ParseUser mCurrentUser;
+    protected ParseUser mFriend;
+    protected ParseRelation<ParseUser> mRelationOfFriend;
+    
 
     public InviteFriendsFragment() {
         // Required empty public constructor
@@ -131,20 +135,41 @@ public class InviteFriendsFragment extends android.support.v4.app.ListFragment{
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 
+        mFriend = mUsers.get(position);
+        mRelationOfFriend = mFriend.getRelation(ParseConstants.KEY_FRIENDS_RELATION);
+
         if (getListView().isItemChecked(position)) {
-            mFriendsRelation.add(mUsers.get(position));
+            mFriendsRelation.add(mFriend);
+            mRelationOfFriend.add(mCurrentUser); //also add current user to friendRelation of friend
+            mFriend.put("phone", 1);
+            //Toast.makeText(getActivity(), mFriend.getEmail()+" added",Toast.LENGTH_SHORT).show();
 
         } else {
-            mFriendsRelation.remove(mUsers.get(position));
-
+            mFriendsRelation.remove(mFriend);
+            mRelationOfFriend.remove(mCurrentUser); //also remove current user to friendRelation of friend
+            mFriend.put("phone", 0);
+            //Toast.makeText(getActivity(), mFriend.getEmail()+" removed",Toast.LENGTH_SHORT).show();
         }
+
+
 
         mCurrentUser.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
+                //Toast.makeText(getActivity(), mCurrentUser.getEmail() + " saved", Toast.LENGTH_SHORT).show();
+            }
 
+        });
+
+        //save friend
+        mFriend.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                Toast.makeText(getActivity(), mFriend.getEmail() + " saved", Toast.LENGTH_SHORT).show();
             }
         });
+
+
 
     }
 }
