@@ -4,10 +4,11 @@ package soshop.social.soshop.Fragment;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 
 import com.parse.FindCallback;
@@ -20,6 +21,7 @@ import com.parse.ParseUser;
 import java.util.ArrayList;
 import java.util.List;
 
+import soshop.social.soshop.Adapter.FeedViewAdapter;
 import soshop.social.soshop.PostActivity;
 import soshop.social.soshop.R;
 import soshop.social.soshop.Utils.ParseConstants;
@@ -27,13 +29,18 @@ import soshop.social.soshop.Utils.ParseConstants;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MainFeedFragment extends android.support.v4.app.ListFragment {
+public class MainFeedFragment extends android.support.v4.app.Fragment {
 
     //member variable
     protected Button mPostButton;
 
     protected ParseUser mCurrentUser;
     protected ParseRelation mFriendsRelation;
+
+    //member for Recycler View
+    protected RecyclerView mRecyclerView;
+    protected FeedViewAdapter mAdapter;
+    protected RecyclerView.LayoutManager mLayoutManager;
 
     public MainFeedFragment() {
         // Required empty public constructor
@@ -57,6 +64,14 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
             }
         });
         //END:Initialize the button for posting.
+        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        //START: Recycler View
+
+
+        //END: Recycler View
+
         return rootView;
 
 
@@ -118,23 +133,28 @@ public class MainFeedFragment extends android.support.v4.app.ListFragment {
                     //Query Success
                     //Toast.makeText(getActivity(), "Query success, " + soShopPostObjects.size() + " objects get", Toast.LENGTH_LONG).show();
 
-                    String[] userCaption = new String[soShopPostObjects.size()];
-                    int i = 0;
-                    for (ParseObject soShopPostObject: soShopPostObjects){
-                        userCaption[i] = soShopPostObject.getString(ParseConstants.KEY_SENDER_CAPTION);
-                        i++;
-                    }
+//                    String[] userCaption = new String[soShopPostObjects.size()];
+//                    int i = 0;
+//                    for (ParseObject soShopPostObject: soShopPostObjects){
+//                        userCaption[i] = soShopPostObject.getString(ParseConstants.KEY_SENDER_CAPTION);
+//                        i++;
+//                    }
+//
+//                    //add condition so list view adapter does not create every time it is resume , WHICH CAN PREVENT APP CRASH.
+//                    if(getListView().getAdapter()==null) {
+//
+//                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getListView().getContext(), android.R.layout.simple_list_item_1, userCaption);
+//                        setListAdapter(adapter);
+//                    } else {
+//
+//                        ArrayAdapter<String> adapter = (ArrayAdapter<String>) getListView().getAdapter();
+//                        adapter.notifyDataSetChanged();
 
-                    //add condition so list view adapter does not create every time it is resume , WHICH CAN PREVENT APP CRASH.
-                    if(getListView().getAdapter()==null) {
 
-                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getListView().getContext(), android.R.layout.simple_list_item_1, userCaption);
-                        setListAdapter(adapter);
-                    } else {
 
-                        ArrayAdapter<String> adapter = (ArrayAdapter<String>) getListView().getAdapter();
-                        adapter.notifyDataSetChanged();
-                    }
+//                    }
+                        mAdapter = new FeedViewAdapter(soShopPostObjects);
+                        mRecyclerView.setAdapter(mAdapter);
                 }
 
             }

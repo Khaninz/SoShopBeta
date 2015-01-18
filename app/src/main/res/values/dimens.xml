@@ -10,4 +10,6 @@
     <dimen name="create_post_image_height_dimension">150dp</dimen>
     <dimen name="section_header_text_size">20sp</dimen>
     <dimen name="section_header_margin_vertical">10dp</dimen>
+    <dimen name="sender_image_width_height_dimension">50dp</dimen>
+    <dimen name="temp_image_height_dimension">250dp</dimen>
 </resources>
