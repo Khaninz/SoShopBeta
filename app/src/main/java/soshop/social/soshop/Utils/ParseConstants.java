@@ -14,10 +14,11 @@ public final class ParseConstants {
     public static final String KEY_ITEM_NAME = "itemName";
     public static final String KEY_CURRENCY = "currency";
     public static final String KEY_CAPTION = "senderCaption";
+    public static final String KEY_TOTAL_SOSHOP = "soshopVote";
+    public static final String KEY_IS_VOTE_SOSHOP_RELATION = "isVotedSoShop";
 
 
-    //Relation KEY
-    public static final String KEY_FRIENDS_RELATION = "friendsRelation";
+
 
 
 
@@ -26,7 +27,7 @@ public final class ParseConstants {
     public static final String KEY_OBJECT_ID = "objectId";
     public static final String KEY_USER_ID = "userId";
     public static final String KEY_FRIEND_ID_ARRAY = "friendIdsArray";
-
+    public static final String KEY_FRIENDS_RELATION = "friendsRelation"; //Relation KEY
 
 
 

@@ -31,5 +31,8 @@
     <string name="location_name_hint">Shop/Store/Location</string>
     <string name="post_error_title">Post Failed!</string>
     <string name="post_error_message">Please fill in your item name and price.</string>
+    <string name="soshop_button_label">SoShop</string>
+    <string name="comment_button_label">comment</string>
+    <string name="noshop_button_label">NoShop</string>
 
 </resources>

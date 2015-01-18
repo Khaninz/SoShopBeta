@@ -127,6 +127,7 @@
                     android:layout_height="wrap_content" />
                 <Button
                     android:id="@+id/soShopButton"
+                    android:text="@string/soshop_button_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
 
@@ -143,6 +144,7 @@
                 android:layout_height="wrap_content" />
             <Button
                 android:id="@+id/commentButton"
+                android:text="@string/comment_button_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
@@ -160,6 +162,7 @@
                 android:layout_height="wrap_content" />
             <Button
                 android:id="@+id/NoShopButton"
+                android:text="@string/noshop_button_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
