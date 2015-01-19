@@ -96,6 +96,8 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_FRIENDS_RELATION);
 
 
+
+
         ArrayList<ParseUser> friends = (ArrayList<ParseUser>) mFriendsRelation.getQuery().find(); //program auto add throws for getQuery.find
         ArrayList<String> friendsIds = new ArrayList<>(friends.size()); //create ArrayList String to be used in queries below
         int i = 0;
@@ -112,7 +114,7 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
 
         //query for friend of user post. User id appear in recipients and sender is still friend with a user.
         ParseQuery<ParseObject> userFriendsPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
-        userFriendsPostQuery.whereEqualTo(ParseConstants.KEY_RECIPIENT_IDS, mCurrentUser.getObjectId());
+        //userFriendsPostQuery.whereEqualTo(ParseConstants.KEY_RECIPIENT_IDS, mCurrentUser.getObjectId());
         userFriendsPostQuery.whereContainedIn(ParseConstants.KEY_SENDER_IDS, friendsIds ); // this is add to fix when post is still show when user unfriend the poster.
 
         // add or operator

@@ -15,7 +15,9 @@ public final class ParseConstants {
     public static final String KEY_CURRENCY = "currency";
     public static final String KEY_CAPTION = "senderCaption";
     public static final String KEY_TOTAL_SOSHOP = "soshopVote";
-    public static final String KEY_IS_VOTE_SOSHOP_RELATION = "isVotedSoShop";
+    public static final String KEY_TOTAL_NOSHOP = "noshopVote";
+    public static final String KEY_IS_VOTE_SOSHOP_RELATION = "isVotedSoShop"; //user that voted with SoShop
+    public static final String KEY_IS_VOTE_NOSHOP_RELATION = "isVotedNoShop"; //user that voted with NoShop
 
 
 
@@ -28,7 +30,8 @@ public final class ParseConstants {
     public static final String KEY_USER_ID = "userId";
     public static final String KEY_FRIEND_ID_ARRAY = "friendIdsArray";
     public static final String KEY_FRIENDS_RELATION = "friendsRelation"; //Relation KEY
-
+    public static final String KEY_SOSHOP_VOTE_RELATION = "voteSoShopByUser"; // post that user have vote Noshop
+    public static final String KEY_NOSHOP_VOTE_RELATION = "voteNoShopByUser"; // post that user have vote Noshop
 
 
 }
