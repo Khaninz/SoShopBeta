@@ -131,28 +131,9 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
             public void done(List<ParseObject> soShopPostObjects, ParseException e) {
                     if (e == null){
                     //Query Success
-                    //Toast.makeText(getActivity(), "Query success, " + soShopPostObjects.size() + " objects get", Toast.LENGTH_LONG).show();
-
-//                    String[] userCaption = new String[soShopPostObjects.size()];
-//                    int i = 0;
-//                    for (ParseObject soShopPostObject: soShopPostObjects){
-//                        userCaption[i] = soShopPostObject.getString(ParseConstants.KEY_SENDER_CAPTION);
-//                        i++;
-//                    }
-//
-//                    //add condition so list view adapter does not create every time it is resume , WHICH CAN PREVENT APP CRASH.
-//                    if(getListView().getAdapter()==null) {
-//
-//                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getListView().getContext(), android.R.layout.simple_list_item_1, userCaption);
-//                        setListAdapter(adapter);
-//                    } else {
-//
-//                        ArrayAdapter<String> adapter = (ArrayAdapter<String>) getListView().getAdapter();
-//                        adapter.notifyDataSetChanged();
 
 
 
-//                    }
                         mAdapter = new FeedViewAdapter(soShopPostObjects);
                         mRecyclerView.setAdapter(mAdapter);
                 }
