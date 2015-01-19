@@ -100,35 +100,24 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
     public void onBindViewHolder(final ViewHolder viewHolder, final int i) {
         viewHolder.getCaptionTextView().setText(mCaptionSet[i]);
         viewHolder.getSoShopNumberTextView().setText("("+mSoShopNumberSet[i]+")");
+        viewHolder.getSoShopButton().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
 
-        //START: initialize SoShop Button, check voted and setOnClickListener.
-        final ParseObject soShopPost = mSoShopPosts.get(i);
-        final ParseRelation<ParseUser> isVotedSoShopRelation = soShopPost.getRelation(ParseConstants.KEY_IS_VOTE_SOSHOP_RELATION);
+                ParseObject soShopPost = mSoShopPosts.get(i);
+                ParseRelation<ParseUser> isVotedSoShopRelation = soShopPost.getRelation(ParseConstants.KEY_IS_VOTE_SOSHOP_RELATION);
 
-        try {
-            ArrayList<ParseUser> usersVoted = (ArrayList<ParseUser>) isVotedSoShopRelation.getQuery().find();
-            ArrayList<String> usersVotedIds = new ArrayList<>(usersVoted.size()); //create ArrayList String to be used in queries below
-            int subIndex = 0;
-            for (ParseUser userVoted : usersVoted) { //get each friend id to the list
-                usersVotedIds.add(subIndex, userVoted.getObjectId());
-                subIndex++;
-            }
+                try {
+                    ArrayList<ParseUser> votedUsers = (ArrayList<ParseUser>) isVotedSoShopRelation.getQuery().find();
+                    ArrayList<String> votedUsersIds = new ArrayList<>(votedUsers.size()); //create ArrayList String to be used in queries below
+                    int subi = 0;
+                    for (ParseUser votedUser : votedUsers) { //get each friend id to the list
+                        votedUsersIds.add(subi, votedUser.getObjectId());
+                        subi++;
+                    }
 
-            final Boolean isContained = usersVotedIds.contains(mCurrentUser.getObjectId()); //check if user is contained in the relation of the post
-
-            if(isContained){
-                //if user already voted, change button color to blue
-                viewHolder.getSoShopButton().setText("Voted!");
-            } else {
-                viewHolder.getSoShopButton().setText("SoShop");
-            }
-
-            viewHolder.getSoShopButton().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    if (isContained){
+                    if (votedUsersIds.contains(mCurrentUser.getObjectId())){
                         //if the user is already voted. remove the vote
                         mSoShopNumberSet[i]--;
                         int newTotalSoShop = mSoShopNumberSet[i];
@@ -165,22 +154,15 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
                         });
                     }
 
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
-            });
 
 
 
 
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        //END: initialize SoShop Button, check voted and setOnClickListener.
-
-
-
-
-
-
+            }
+        });
     }
 
     @Override
