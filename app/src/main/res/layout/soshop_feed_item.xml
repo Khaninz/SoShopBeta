@@ -2,14 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     android:layout_marginTop="10dp">
 
     <RelativeLayout
 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/holo_green_light"
         android:padding="5dp"
+
         >
 
 
@@ -65,7 +66,7 @@
         android:id="@+id/itemImage1"
         android:layout_width="match_parent"
         android:layout_height="@dimen/temp_image_height_dimension"
-        android:background="@android:color/holo_red_light"
+        android:background="#696969"
 
         />
 
@@ -101,41 +102,30 @@
 
             <ImageView
                 android:layout_width="100dp"
-                android:layout_height="5dp"
+                android:layout_height="3dp"
                 android:background="#ff7400"/>
             <ImageView
                 android:layout_width="fill_parent"
-                android:layout_height="5dp"
+                android:layout_height="3dp"
                 android:background="#009999"
                 />
         </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
 
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:layout_gravity="center"
-                    android:text="(0)"
-                    android:id="@+id/totalSoShop"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <Button
-                    android:id="@+id/soShopButton"
-                    android:text="@string/soshop_button_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+        >
 
-                </LinearLayout>
+
         <LinearLayout
+            android:id="@+id/centerLinearLayout"
+            android:layout_centerHorizontal="true"
             android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            >
             <TextView
                 android:layout_gravity="center"
                 android:text="(0)"
@@ -145,15 +135,38 @@
             <Button
                 android:id="@+id/commentButton"
                 android:text="@string/comment_button_label"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/leftLinearLayout"
+            android:layout_toLeftOf="@+id/centerLinearLayout"
             android:orientation="vertical"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content">
+            <TextView
+                android:layout_gravity="center"
+                android:text="(0)"
+                android:id="@+id/totalSoShop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/soShopButton"
+                android:text="@string/soshop_button_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <LinearLayout
+           android:id="@+id/rightLinearLayout"
+            android:layout_toRightOf="@+id/centerLinearLayout"
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            >
             <TextView
                 android:layout_gravity="center"
                 android:text="(0)"
@@ -163,12 +176,12 @@
             <Button
                 android:id="@+id/noShopButton"
                 android:text="@string/noshop_button_label"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
         </LinearLayout>
 
 
-        </LinearLayout>
+        </RelativeLayout>
 
 </LinearLayout>

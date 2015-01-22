@@ -1,17 +1,22 @@
 package soshop.social.soshop.Adapter;
 
+import android.content.Context;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseRelation;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +39,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
     int[] mSoShopNumberSet;
     int[] mNoShopNumberSet;
     List<ParseObject> mSoShopPosts;
-
+    Context mContext;
 
 
     //member for Parse
@@ -42,15 +47,16 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
     ParseRelation<ParseObject> mCurrentUserVoteSoShopRelation;
     ArrayList<ParseObject> mVotedSoShopByUser;
     ArrayList<String> mVotedSoShopByUserIds;
-
     ParseRelation<ParseObject> mCurrentUserVoteNoShopRelation;
     ArrayList<ParseObject> mVotedNoShopByUser;
     ArrayList<String> mVotedNoShopByUserIds;
 
 
-    //MAIN CONSTRUCTOR
-    public FeedViewAdapter (List<ParseObject> soShopPosts){
 
+    //MAIN CONSTRUCTOR
+    public FeedViewAdapter (List<ParseObject> soShopPosts, Context context){
+
+        mContext = context;
         mSoShopPosts = soShopPosts;
         numberOfPosts = soShopPosts.size();
 
@@ -59,14 +65,13 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         mSoShopNumberSet = new int[numberOfPosts];
         mNoShopNumberSet = new int[numberOfPosts];
 
-        int i = 0;
-        for (ParseObject soShopPost: soShopPosts){
-            mCaptionSet[i] = soShopPost.getString(ParseConstants.KEY_SENDER_CAPTION);
-            mSoShopNumberSet[i] = soShopPost.getInt(ParseConstants.KEY_TOTAL_SOSHOP);
-            mNoShopNumberSet[i] = soShopPost.getInt(ParseConstants.KEY_TOTAL_NOSHOP);
-
-            i++;
-        }
+//        int i = 0;
+//        for (ParseObject soShopPost: soShopPosts){
+//            mCaptionSet[i] = soShopPost.getString(ParseConstants.KEY_SENDER_CAPTION);
+//            mSoShopNumberSet[i] = soShopPost.getInt(ParseConstants.KEY_TOTAL_SOSHOP);
+//            mNoShopNumberSet[i] = soShopPost.getInt(ParseConstants.KEY_TOTAL_NOSHOP);
+//
+//        }
 
     }
 
@@ -79,6 +84,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         private TextView mNoShopNumberTextView;
         private Button mSoShopButton;
         private Button mNoShopButton;
+        private ImageView mImageViewI;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -88,6 +94,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
             mNoShopNumberTextView = (TextView) itemView.findViewById(R.id.totalNoShop);
             mSoShopButton = (Button) itemView.findViewById(R.id.soShopButton);
             mNoShopButton = (Button) itemView.findViewById(R.id.noShopButton);
+            mImageViewI = (ImageView) itemView.findViewById(R.id.itemImage1);
         }
 
         public TextView getCaptionTextView(){
@@ -104,6 +111,9 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         }
         public Button getNoShopButton(){
             return mNoShopButton;
+        }
+        public ImageView getImageViewI() {
+            return mImageViewI;
         }
 
     }
@@ -149,15 +159,31 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, final int i) {
-        viewHolder.getCaptionTextView().setText(mCaptionSet[i]);
-        viewHolder.getSoShopNumberTextView().setText("("+mSoShopNumberSet[i]+")");
-        viewHolder.getNoShopNumberTextView().setText("("+mNoShopNumberSet[i]+")");
 
         final ParseObject soShopPost = mSoShopPosts.get(i);
 
+
+//        viewHolder.getCaptionTextView().setText(mCaptionSet[i]);
+//        viewHolder.getSoShopNumberTextView().setText("("+mSoShopNumberSet[i]+")");
+//        viewHolder.getNoShopNumberTextView().setText("("+mNoShopNumberSet[i]+")");
+
+        String caption = (String) soShopPost.get(ParseConstants.KEY_CAPTION);
+        viewHolder.getCaptionTextView().setText(caption);
+
+        mSoShopNumberSet[i] = soShopPost.getInt(ParseConstants.KEY_TOTAL_SOSHOP);
+        viewHolder.getSoShopNumberTextView().setText("("+mSoShopNumberSet[i]+")");
+
+        mNoShopNumberSet[i] = soShopPost.getInt(ParseConstants.KEY_TOTAL_NOSHOP);
+        viewHolder.getNoShopNumberTextView().setText("("+mNoShopNumberSet[i]+")");
+
+        //START: add image from Parse to imageView using tool from Picasso
+        ParseFile file = soShopPost.getParseFile(ParseConstants.KEY_IMAGE_I);// get the file in parse object
+        Uri fileUri = Uri.parse(file.getUrl());//get the uri of the file.
+        Picasso.with(mContext).load(fileUri.toString()).into(viewHolder.getImageViewI());
+        //END: add image from Parse to imageView using tool from Picasso
+
         //START: SET ACTION and VIEW for SOSHOP BUTTON
         final ParseRelation<ParseUser> isVotedSoShopRelation = soShopPost.getRelation(ParseConstants.KEY_IS_VOTE_SOSHOP_RELATION);
-
         if (mVotedSoShopByUserIds.contains(soShopPost.getObjectId())){
             viewHolder.getSoShopButton().setText("Voted!");
             viewHolder.getNoShopButton().setEnabled(false);

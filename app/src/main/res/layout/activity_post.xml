@@ -45,6 +45,26 @@
             android:layout_height="@dimen/create_post_image_height_dimension"
             android:layout_centerInParent="true"
             android:id="@+id/imageView" />
+
+        <ImageView
+            android:id="@+id/takePicture"
+            android:background="@android:color/holo_blue_light"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_toRightOf="@id/imageView"
+            android:layout_alignTop="@+id/imageView"
+            android:layout_marginLeft="10dp"
+            />
+
+        <ImageView
+            android:id="@+id/chooseFromGallery"
+            android:background="@android:color/holo_red_light"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_toRightOf="@id/imageView"
+            android:layout_alignBottom="@+id/imageView"
+            android:layout_marginLeft="10dp"
+            />
     </RelativeLayout>
 
     <EditText

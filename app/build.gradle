@@ -29,6 +29,7 @@ dependencies {
 
 
 dependencies {
-
+    compile fileTree(dir: 'libs', include: 'commons-io-*.jar')
     compile fileTree(dir: 'libs', include: 'Parse-*.jar')
+
 }

@@ -64,11 +64,11 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
             }
         });
         //END:Initialize the button for posting.
+
+        //START: Recycler View
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
         mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
-        //START: Recycler View
-
 
         //END: Recycler View
 
@@ -112,10 +112,10 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         ParseQuery<ParseObject> userPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
         userPostQuery.whereEqualTo(ParseConstants.KEY_SENDER_IDS, mCurrentUser.getObjectId());
 
-        //query for friend of user post. User id appear in recipients and sender is still friend with a user.
+        //query for friend of user post.
         ParseQuery<ParseObject> userFriendsPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
-        //userFriendsPostQuery.whereEqualTo(ParseConstants.KEY_RECIPIENT_IDS, mCurrentUser.getObjectId());
-        userFriendsPostQuery.whereContainedIn(ParseConstants.KEY_SENDER_IDS, friendsIds ); // this is add to fix when post is still show when user unfriend the poster.
+        //userFriendsPostQuery.whereEqualTo(ParseConstants.KEY_RECIPIENT_IDS, mCurrentUser.getObjectId()); //query to match Post Recipient Ids with current user Ids.
+        userFriendsPostQuery.whereContainedIn(ParseConstants.KEY_SENDER_IDS, friendsIds ); // query to match Sender Ids of post to the friend Ids of user. this is add to fix when post is still show when user unfriend the poster.
 
         // add or operator
         List<ParseQuery<ParseObject>> queries = new ArrayList<ParseQuery<ParseObject>>();
@@ -133,30 +133,12 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
             public void done(List<ParseObject> soShopPostObjects, ParseException e) {
                     if (e == null){
                     //Query Success
-                    //Toast.makeText(getActivity(), "Query success, " + soShopPostObjects.size() + " objects get", Toast.LENGTH_LONG).show();
 
-//                    String[] userCaption = new String[soShopPostObjects.size()];
-//                    int i = 0;
-//                    for (ParseObject soShopPostObject: soShopPostObjects){
-//                        userCaption[i] = soShopPostObject.getString(ParseConstants.KEY_SENDER_CAPTION);
-//                        i++;
-//                    }
-//
-//                    //add condition so list view adapter does not create every time it is resume , WHICH CAN PREVENT APP CRASH.
-//                    if(getListView().getAdapter()==null) {
-//
-//                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getListView().getContext(), android.R.layout.simple_list_item_1, userCaption);
-//                        setListAdapter(adapter);
-//                    } else {
-//
-//                        ArrayAdapter<String> adapter = (ArrayAdapter<String>) getListView().getAdapter();
-//                        adapter.notifyDataSetChanged();
-
-
-
-//                    }
-                        mAdapter = new FeedViewAdapter(soShopPostObjects);
+                    if (mAdapter == null) {
+                        mAdapter = new FeedViewAdapter(soShopPostObjects, getActivity());
                         mRecyclerView.setAdapter(mAdapter);
+                    } else{}
+                        mAdapter.notifyDataSetChanged();
                 }
 
             }

@@ -18,8 +18,8 @@ public final class ParseConstants {
     public static final String KEY_TOTAL_NOSHOP = "noshopVote";
     public static final String KEY_IS_VOTE_SOSHOP_RELATION = "isVotedSoShop"; //user that voted with SoShop
     public static final String KEY_IS_VOTE_NOSHOP_RELATION = "isVotedNoShop"; //user that voted with NoShop
-
-
+    public static final String KEY_IMAGE_I = "itemImage1";
+    public static final String KEY_IMAGE_II = "itemImage2";
 
 
 
@@ -34,4 +34,6 @@ public final class ParseConstants {
     public static final String KEY_NOSHOP_VOTE_RELATION = "voteNoShopByUser"; // post that user have vote Noshop
 
 
+    public static final String TYPE_IMAGE = "image" ;
+    public static final String KEY_FILE_IMAGE_I = "itemImage1" ;
 }
