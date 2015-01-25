@@ -52,6 +52,10 @@ public class MainActivity extends ActionBarActivity
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
 
+
+
+
+
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //CHECK IF THERE IS CURRENT USER LOGIN IN.
         ParseUser currentUser = new ParseUser().getCurrentUser();
@@ -63,6 +67,22 @@ public class MainActivity extends ActionBarActivity
             Log.i(TAG, currentUser.getUsername());
         }
     }
+//    //Facebook Track but got error maybe need to put in fragment
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//
+//        // Logs 'install' and 'app activate' App Events.
+//        AppEventsLogger.activateApp(this);
+//    }
+//
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//
+//        // Logs 'app deactivate' App Event.
+//        AppEventsLogger.deactivateApp(this);
+//    }
 
     private void navigateToLogin() {
         Intent intent = new Intent(this, LoginActivity.class);
@@ -194,6 +214,8 @@ public class MainActivity extends ActionBarActivity
             ((MainActivity) activity).onSectionAttached(
                     getArguments().getInt(ARG_SECTION_NUMBER));
         }
+
+
     }
 
 }
