@@ -25,16 +25,17 @@ import soshop.social.soshop.Utils.ParseConstants;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class InviteFriendsFragment extends android.support.v4.app.ListFragment{
+public class InviteFriendsFragment extends android.support.v4.app.ListFragment {
 
     //create member variable of list the contain ParseUser data.
+
     protected List<ParseUser> mUsers;
     //declare relation members to restore parse relations.
     protected ParseRelation<ParseUser> mFriendsRelation;
     protected ParseUser mCurrentUser;
     protected ParseUser mFriend;
     protected ParseRelation<ParseUser> mRelationOfFriend;
-    
+
 
     public InviteFriendsFragment() {
         // Required empty public constructor
@@ -48,13 +49,10 @@ public class InviteFriendsFragment extends android.support.v4.app.ListFragment{
         View rootView = inflater.inflate(R.layout.fragment_invite_friends, container, false);
 
 
-
         return rootView;
 
 
-
     }
-
 
 
     @Override
@@ -96,12 +94,9 @@ public class InviteFriendsFragment extends android.support.v4.app.ListFragment{
                         adapter.notifyDataSetChanged();
                     }
 
-
-
                 }
             }
         });
-
 
     }
 
@@ -110,18 +105,17 @@ public class InviteFriendsFragment extends android.support.v4.app.ListFragment{
         mFriendsRelation.getQuery().findInBackground(new FindCallback<ParseUser>() {
             @Override
             public void done(List<ParseUser> friends, ParseException e) {
-                if (e == null){
+                if (e == null) {
 
-                    for (int i = 0 ; i < mUsers.size() ; i++){
+                    for (int i = 0; i < mUsers.size(); i++) {
 
                         ParseUser user = mUsers.get(i);
 
-                        for (ParseUser friend: friends){
-                            if (friend.getObjectId().equals(user.getObjectId())){
+                        for (ParseUser friend : friends) {
+                            if (friend.getObjectId().equals(user.getObjectId())) {
                                 getListView().setItemChecked(i, true);
                             }
                         }
-
 
                     }
 
@@ -151,8 +145,6 @@ public class InviteFriendsFragment extends android.support.v4.app.ListFragment{
             //Toast.makeText(getActivity(), mFriend.getEmail()+" removed",Toast.LENGTH_SHORT).show();
         }
 
-
-
         mCurrentUser.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
@@ -168,8 +160,6 @@ public class InviteFriendsFragment extends android.support.v4.app.ListFragment{
                 Toast.makeText(getActivity(), mFriend.getEmail() + " saved", Toast.LENGTH_SHORT).show();
             }
         });
-
-
 
     }
 }

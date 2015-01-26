@@ -14,6 +14,8 @@ import soshop.social.soshop.Utils.ParseConstants;
 public class SoShopBetaApplication extends Application{
     public void onCreate() {
 
+
+            //Parse.enableLocalDatastore(this);
             Parse.initialize(this, "L15MX9Hlc0aJ1uG2UUD7k9k46go5Mvm1FzaDs2BB", "ptnznlu6PRJtdvc7kBYutxKWgEHeVNWIsekvZGTB");
 
     }

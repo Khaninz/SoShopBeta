@@ -3,6 +3,7 @@ package soshop.social.soshop.Adapter;
 import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import com.parse.SaveCallback;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import soshop.social.soshop.R;
@@ -30,17 +32,11 @@ import soshop.social.soshop.Utils.ParseConstants;
 public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHolder> {
 
     //member variable of data set
-    String[] mSenderNameSet;
-    String[] mCreatedAtSet;
-    String[] mCaptionSet;
-    String[] mItemPriceSet;
-    String[] mItemNameSet;
     int numberOfPosts;
     int[] mSoShopNumberSet;
     int[] mNoShopNumberSet;
     List<ParseObject> mSoShopPosts;
     Context mContext;
-
 
     //member for Parse
     ParseUser mCurrentUser;
@@ -51,8 +47,6 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
     ArrayList<ParseObject> mVotedNoShopByUser;
     ArrayList<String> mVotedNoShopByUserIds;
 
-
-
     //MAIN CONSTRUCTOR
     public FeedViewAdapter (List<ParseObject> soShopPosts, Context context){
 
@@ -60,22 +54,10 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         mSoShopPosts = soShopPosts;
         numberOfPosts = soShopPosts.size();
 
-
-        mCaptionSet = new String[numberOfPosts];
         mSoShopNumberSet = new int[numberOfPosts];
         mNoShopNumberSet = new int[numberOfPosts];
 
-//        int i = 0;
-//        for (ParseObject soShopPost: soShopPosts){
-//            mCaptionSet[i] = soShopPost.getString(ParseConstants.KEY_SENDER_CAPTION);
-//            mSoShopNumberSet[i] = soShopPost.getInt(ParseConstants.KEY_TOTAL_SOSHOP);
-//            mNoShopNumberSet[i] = soShopPost.getInt(ParseConstants.KEY_TOTAL_NOSHOP);
-//
-//        }
-
     }
-
-
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -85,6 +67,11 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         private Button mSoShopButton;
         private Button mNoShopButton;
         private ImageView mImageViewI;
+        private TextView mItemName;
+        private TextView mItemPrice;
+        private TextView mItemOptionalLocation;
+        private TextView mSenderName;
+        private TextView mCreatedAt;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -95,6 +82,12 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
             mSoShopButton = (Button) itemView.findViewById(R.id.soShopButton);
             mNoShopButton = (Button) itemView.findViewById(R.id.noShopButton);
             mImageViewI = (ImageView) itemView.findViewById(R.id.itemImage1);
+            mItemName = (TextView) itemView.findViewById(R.id.itemName);
+            mItemPrice = (TextView) itemView.findViewById(R.id.itemPrice);
+            mItemOptionalLocation = (TextView) itemView.findViewById(R.id.itemOptionalLocation);
+            mSenderName = (TextView) itemView.findViewById(R.id.senderName);
+            mCreatedAt = (TextView) itemView.findViewById(R.id.createdAt);
+
         }
 
         public TextView getCaptionTextView(){
@@ -114,6 +107,21 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         }
         public ImageView getImageViewI() {
             return mImageViewI;
+        }
+        public TextView getItemName (){
+               return mItemName;
+        }
+        public TextView getItemPrice (){
+            return mItemPrice;
+        }
+        public TextView getItemOptionalLocation (){
+            return mItemOptionalLocation;
+        }
+        public TextView getSenderName(){
+            return mSenderName;
+        }
+        public TextView getCreateAt(){
+            return  mCreatedAt;
         }
 
     }
@@ -162,11 +170,203 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
 
         final ParseObject soShopPost = mSoShopPosts.get(i);
 
+        addDetailToView(viewHolder, i, soShopPost);
 
-//        viewHolder.getCaptionTextView().setText(mCaptionSet[i]);
-//        viewHolder.getSoShopNumberTextView().setText("("+mSoShopNumberSet[i]+")");
-//        viewHolder.getNoShopNumberTextView().setText("("+mNoShopNumberSet[i]+")");
+        //START: add image from Parse to imageView using tool from Picasso
+        ParseFile file = soShopPost.getParseFile(ParseConstants.KEY_IMAGE_I);// get the file in parse object
+        Uri fileUri = Uri.parse(file.getUrl());//get the uri of the file.
+        Picasso.with(mContext).load(fileUri.toString()).into(viewHolder.getImageViewI());
+        //END: add image from Parse to imageView using tool from Picasso
 
+        //START: disable vote if it is user's own post
+        if (mCurrentUser.getObjectId().equals(soShopPost.get(ParseConstants.KEY_SENDER_IDS)) ){
+            viewHolder.getSoShopButton().setEnabled(false);
+            viewHolder.getNoShopButton().setEnabled(false);
+        } else {
+
+            //START: SET ACTION and VIEW for SOSHOP BUTTON
+            final ParseRelation<ParseUser> isVotedSoShopRelation = soShopPost.getRelation(ParseConstants.KEY_IS_VOTE_SOSHOP_RELATION);
+            if (mVotedSoShopByUserIds.contains(soShopPost.getObjectId())){
+                viewHolder.getSoShopButton().setText("Voted!");
+                viewHolder.getNoShopButton().setEnabled(false);
+            }
+
+            viewHolder.getSoShopButton().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    try {
+                        //Check if user is already voted.
+                        ArrayList<ParseUser> votedUsers = (ArrayList<ParseUser>) isVotedSoShopRelation.getQuery().find();
+                        ArrayList<String> votedUsersIds = new ArrayList<>(votedUsers.size()); //create ArrayList String to be used in queries below
+                        int subIndex = 0;
+                        for (ParseUser votedUser : votedUsers) { //get each friend id to the list
+                            votedUsersIds.add(subIndex, votedUser.getObjectId());
+                            subIndex++;
+                        }
+
+                        Boolean isContained = votedUsersIds.contains(mCurrentUser.getObjectId());
+
+                        if (isContained){
+                            //if the user is already voted. remove the vote
+                            mSoShopNumberSet[i]--;
+                            int newTotalSoShop = mSoShopNumberSet[i];
+
+                            isVotedSoShopRelation.remove(mCurrentUser); //remove user from relation
+                            soShopPost.put(ParseConstants.KEY_TOTAL_SOSHOP, newTotalSoShop); //add updated vote
+                            soShopPost.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if ( e ==null) {
+
+                                        mCurrentUserVoteSoShopRelation.remove(soShopPost);
+                                        mCurrentUser.saveInBackground(new SaveCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                viewHolder.getSoShopNumberTextView().setText("(" + mSoShopNumberSet[i] + ")");
+                                                viewHolder.getSoShopButton().setText("SoShop");
+                                                viewHolder.getNoShopButton().setEnabled(true);
+                                            }
+                                        });
+
+                                    } else {
+
+                                    }
+                                }
+                            });
+
+                        } else {
+                            // not yet vote add the vote; increase vote and add user to relation in post
+                            mSoShopNumberSet[i]++;
+                            int newTotalSoShop = mSoShopNumberSet[i];
+
+                            isVotedSoShopRelation.add(mCurrentUser);//add user to relation
+                            soShopPost.put(ParseConstants.KEY_TOTAL_SOSHOP, newTotalSoShop);//add updated vote
+                            soShopPost.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if ( e ==null) {
+                                        mCurrentUserVoteSoShopRelation.add(soShopPost);
+                                        mCurrentUser.saveInBackground(new SaveCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                viewHolder.getSoShopNumberTextView().setText("(" + mSoShopNumberSet[i] + ")");
+                                                viewHolder.getSoShopButton().setText("Voted!");
+                                                viewHolder.getNoShopButton().setEnabled(false);
+                                            }
+                                        });
+
+                                    } else {
+
+                                    }
+                                }
+                            });
+                        }
+
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+            //END: SET ACTION and VIEW for SOSHOP BUTTON
+
+            //START: SET ACTION and VIEW for NOSHOP BUTTON
+            final ParseRelation<ParseUser> isVotedNoShopRelation = soShopPost.getRelation(ParseConstants.KEY_IS_VOTE_NOSHOP_RELATION);
+
+            if (mVotedNoShopByUserIds.contains(soShopPost.getObjectId())){
+                viewHolder.getNoShopButton().setText("Voted!");
+                viewHolder.getSoShopButton().setEnabled(false);
+            }
+
+            viewHolder.getNoShopButton().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    try {
+                        //Check if user is already voted.
+                        ArrayList<ParseUser> votedUsers = (ArrayList<ParseUser>) isVotedNoShopRelation.getQuery().find();
+                        ArrayList<String> votedUsersIds = new ArrayList<>(votedUsers.size()); //create ArrayList String to be used in queries below
+                        int subIndex = 0;
+                        for (ParseUser votedUser : votedUsers) { //get each friend id to the list
+                            votedUsersIds.add(subIndex, votedUser.getObjectId());
+                            subIndex++;
+                        }
+
+                        Boolean isContained = votedUsersIds.contains(mCurrentUser.getObjectId());
+
+                        if (isContained){
+                            //if the user is already voted. remove the vote
+                            mNoShopNumberSet[i]--;
+                            int newTotalNoShop = mNoShopNumberSet[i];
+
+                            isVotedNoShopRelation.remove(mCurrentUser); //remove user from relation
+                            soShopPost.put(ParseConstants.KEY_TOTAL_NOSHOP, newTotalNoShop); //add updated vote
+                            soShopPost.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if ( e ==null) {
+
+                                        mCurrentUserVoteNoShopRelation.remove(soShopPost);
+                                        mCurrentUser.saveInBackground(new SaveCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                viewHolder.getNoShopNumberTextView().setText("(" + mNoShopNumberSet[i] + ")");
+                                                viewHolder.getNoShopButton().setText("NoShop");
+                                                viewHolder.getSoShopButton().setEnabled(true);
+                                            }
+                                        });
+
+                                    } else {
+
+                                    }
+                                }
+                            });
+
+                        } else {
+                            // not yet vote add the vote; increase vote and add user to relation in post
+                            mNoShopNumberSet[i]++;
+                            int newTotalNoShop = mNoShopNumberSet[i];
+
+                            isVotedNoShopRelation.add(mCurrentUser); //remove user from relation
+                            soShopPost.put(ParseConstants.KEY_TOTAL_NOSHOP, newTotalNoShop); //add updated vote
+                            soShopPost.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if ( e ==null) {
+
+                                        mCurrentUserVoteNoShopRelation.add(soShopPost);
+                                        mCurrentUser.saveInBackground(new SaveCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                viewHolder.getNoShopNumberTextView().setText("(" + mNoShopNumberSet[i] + ")");
+                                                viewHolder.getNoShopButton().setText("Voted!");
+                                                viewHolder.getSoShopButton().setEnabled(false);
+                                            }
+                                        });
+
+                                    } else {
+
+                                    }
+                                }
+                            });
+                        }
+
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+            //END: SET ACTION and VIEW for NOSHOP BUTTON
+        }
+        //END: disable vote if it is user's own post
+
+
+
+    }
+
+    private void addDetailToView(ViewHolder viewHolder, int i, ParseObject soShopPost) {
         String caption = (String) soShopPost.get(ParseConstants.KEY_CAPTION);
         viewHolder.getCaptionTextView().setText(caption);
 
@@ -176,187 +376,30 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         mNoShopNumberSet[i] = soShopPost.getInt(ParseConstants.KEY_TOTAL_NOSHOP);
         viewHolder.getNoShopNumberTextView().setText("("+mNoShopNumberSet[i]+")");
 
-        //START: add image from Parse to imageView using tool from Picasso
-        ParseFile file = soShopPost.getParseFile(ParseConstants.KEY_IMAGE_I);// get the file in parse object
-        Uri fileUri = Uri.parse(file.getUrl());//get the uri of the file.
-        Picasso.with(mContext).load(fileUri.toString()).into(viewHolder.getImageViewI());
-        //END: add image from Parse to imageView using tool from Picasso
+        String itemName = (String) soShopPost.get(ParseConstants.KEY_ITEM_NAME);
+        viewHolder.getItemName().setText(itemName);
 
-        //START: SET ACTION and VIEW for SOSHOP BUTTON
-        final ParseRelation<ParseUser> isVotedSoShopRelation = soShopPost.getRelation(ParseConstants.KEY_IS_VOTE_SOSHOP_RELATION);
-        if (mVotedSoShopByUserIds.contains(soShopPost.getObjectId())){
-            viewHolder.getSoShopButton().setText("Voted!");
-            viewHolder.getNoShopButton().setEnabled(false);
+        int itemPriceInt = (int) soShopPost.get(ParseConstants.KEY_ITEM_PRICE);
+        String itemPrice = itemPriceInt +"";
+        viewHolder.getItemPrice().setText(itemPrice);
+
+        String itemLocation = (String) soShopPost.get(ParseConstants.KEY_LOCATION_DESCRIPTION);
+        if (itemLocation == null ){
+            viewHolder.getItemOptionalLocation().setVisibility(View.INVISIBLE);
+        } else {
+            viewHolder.getItemOptionalLocation().setText(itemLocation);
+            viewHolder.getItemOptionalLocation().setVisibility(View.INVISIBLE);
         }
 
-        viewHolder.getSoShopButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        String firstName = (String) soShopPost.get(ParseConstants.KEY_SENDER_FIRST_NAME);
+        String lastName = (String) soShopPost.get(ParseConstants.KEY_SENDER_LAST_NAME);
+        viewHolder.getSenderName().setText(firstName+" "+lastName);
 
-                try {
-                    //Check if user is already voted.
-                    ArrayList<ParseUser> votedUsers = (ArrayList<ParseUser>) isVotedSoShopRelation.getQuery().find();
-                    ArrayList<String> votedUsersIds = new ArrayList<>(votedUsers.size()); //create ArrayList String to be used in queries below
-                    int subIndex = 0;
-                    for (ParseUser votedUser : votedUsers) { //get each friend id to the list
-                        votedUsersIds.add(subIndex, votedUser.getObjectId());
-                        subIndex++;
-                    }
-
-                    Boolean isContained = votedUsersIds.contains(mCurrentUser.getObjectId());
-
-                    if (isContained){
-                        //if the user is already voted. remove the vote
-                        mSoShopNumberSet[i]--;
-                        int newTotalSoShop = mSoShopNumberSet[i];
-
-                        isVotedSoShopRelation.remove(mCurrentUser); //remove user from relation
-                        soShopPost.put(ParseConstants.KEY_TOTAL_SOSHOP, newTotalSoShop); //add updated vote
-                        soShopPost.saveInBackground(new SaveCallback() {
-                            @Override
-                            public void done(ParseException e) {
-                                if ( e ==null) {
-
-                                    mCurrentUserVoteSoShopRelation.remove(soShopPost);
-                                    mCurrentUser.saveInBackground(new SaveCallback() {
-                                        @Override
-                                        public void done(ParseException e) {
-                                            viewHolder.getSoShopNumberTextView().setText("(" + mSoShopNumberSet[i] + ")");
-                                            viewHolder.getSoShopButton().setText("SoShop");
-                                            viewHolder.getNoShopButton().setEnabled(true);
-                                        }
-                                    });
-
-                                } else {
-
-                                }
-                            }
-                        });
-
-                    } else {
-                        // not yet vote add the vote; increase vote and add user to relation in post
-                        mSoShopNumberSet[i]++;
-                        int newTotalSoShop = mSoShopNumberSet[i];
-
-                        isVotedSoShopRelation.add(mCurrentUser);//add user to relation
-                        soShopPost.put(ParseConstants.KEY_TOTAL_SOSHOP, newTotalSoShop);//add updated vote
-                        soShopPost.saveInBackground(new SaveCallback() {
-                            @Override
-                            public void done(ParseException e) {
-                                if ( e ==null) {
-                                    mCurrentUserVoteSoShopRelation.add(soShopPost);
-                                    mCurrentUser.saveInBackground(new SaveCallback() {
-                                        @Override
-                                        public void done(ParseException e) {
-                                            viewHolder.getSoShopNumberTextView().setText("(" + mSoShopNumberSet[i] + ")");
-                                            viewHolder.getSoShopButton().setText("Voted!");
-                                            viewHolder.getNoShopButton().setEnabled(false);
-                                        }
-                                    });
-
-                                } else {
-
-                                }
-                            }
-                        });
-                    }
-
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
-        //END: SET ACTION and VIEW for SOSHOP BUTTON
-
-        //START: SET ACTION and VIEW for NOSHOP BUTTON
-        final ParseRelation<ParseUser> isVotedNoShopRelation = soShopPost.getRelation(ParseConstants.KEY_IS_VOTE_NOSHOP_RELATION);
-
-        if (mVotedNoShopByUserIds.contains(soShopPost.getObjectId())){
-            viewHolder.getNoShopButton().setText("Voted!");
-            viewHolder.getSoShopButton().setEnabled(false);
-        }
-
-        viewHolder.getNoShopButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                try {
-                    //Check if user is already voted.
-                    ArrayList<ParseUser> votedUsers = (ArrayList<ParseUser>) isVotedNoShopRelation.getQuery().find();
-                    ArrayList<String> votedUsersIds = new ArrayList<>(votedUsers.size()); //create ArrayList String to be used in queries below
-                    int subIndex = 0;
-                    for (ParseUser votedUser : votedUsers) { //get each friend id to the list
-                        votedUsersIds.add(subIndex, votedUser.getObjectId());
-                        subIndex++;
-                    }
-
-                    Boolean isContained = votedUsersIds.contains(mCurrentUser.getObjectId());
-
-                    if (isContained){
-                        //if the user is already voted. remove the vote
-                        mNoShopNumberSet[i]--;
-                        int newTotalNoShop = mNoShopNumberSet[i];
-
-                        isVotedNoShopRelation.remove(mCurrentUser); //remove user from relation
-                        soShopPost.put(ParseConstants.KEY_TOTAL_NOSHOP, newTotalNoShop); //add updated vote
-                        soShopPost.saveInBackground(new SaveCallback() {
-                            @Override
-                            public void done(ParseException e) {
-                                if ( e ==null) {
-
-                                    mCurrentUserVoteNoShopRelation.remove(soShopPost);
-                                    mCurrentUser.saveInBackground(new SaveCallback() {
-                                        @Override
-                                        public void done(ParseException e) {
-                                            viewHolder.getNoShopNumberTextView().setText("(" + mNoShopNumberSet[i] + ")");
-                                            viewHolder.getNoShopButton().setText("NoShop");
-                                            viewHolder.getSoShopButton().setEnabled(true);
-                                        }
-                                    });
-
-                                } else {
-
-                                }
-                            }
-                        });
-
-                    } else {
-                        // not yet vote add the vote; increase vote and add user to relation in post
-                        mNoShopNumberSet[i]++;
-                        int newTotalNoShop = mNoShopNumberSet[i];
-
-                        isVotedNoShopRelation.add(mCurrentUser); //remove user from relation
-                        soShopPost.put(ParseConstants.KEY_TOTAL_NOSHOP, newTotalNoShop); //add updated vote
-                        soShopPost.saveInBackground(new SaveCallback() {
-                            @Override
-                            public void done(ParseException e) {
-                                if ( e ==null) {
-
-                                    mCurrentUserVoteNoShopRelation.add(soShopPost);
-                                    mCurrentUser.saveInBackground(new SaveCallback() {
-                                        @Override
-                                        public void done(ParseException e) {
-                                            viewHolder.getNoShopNumberTextView().setText("(" + mNoShopNumberSet[i] + ")");
-                                            viewHolder.getNoShopButton().setText("Voted!");
-                                            viewHolder.getSoShopButton().setEnabled(false);
-                                        }
-                                    });
-
-                                } else {
-
-                                }
-                            }
-                        });
-                    }
-
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
-        //END: SET ACTION and VIEW for NOSHOP BUTTON
+        Date createdAt = soShopPost.getCreatedAt(); //object from parse
+        //best way to get time, for now. 17/12/14
+        long now = new Date().getTime();
+        String convertedDate = DateUtils.getRelativeTimeSpanString(createdAt.getTime(), now, DateUtils.SECOND_IN_MILLIS).toString();
+        viewHolder.getCreateAt().setText(convertedDate);
     }
 
     @Override

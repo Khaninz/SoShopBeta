@@ -4,29 +4,42 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.LogInCallback;
 import com.parse.ParseException;
+import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
+
+import java.util.Arrays;
 
 
 public class LoginActivity extends ActionBarActivity {
+
+   public static final String TAG = LoginActivity.class.getSimpleName();
 
     protected EditText mEmaiAsUserEditText;
     protected EditText mPasswordEditText;
     protected Button mLogInButton;
     protected TextView mSignUpTextView;
+    protected Button mFacebookLogInButton;
+    protected ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        mProgressBar.setVisibility(View.INVISIBLE);
 
         //Remove ActionBar
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
@@ -39,6 +52,7 @@ public class LoginActivity extends ActionBarActivity {
         mPasswordEditText = (EditText) findViewById(R.id.passwordEditText);
         mLogInButton = (Button) findViewById(R.id.signUpButton);
         mSignUpTextView = (TextView) findViewById(R.id.signUpTextView);
+        mFacebookLogInButton = (Button) findViewById(R.id.facebook_login_button);
 
         mLogInButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,21 +73,25 @@ public class LoginActivity extends ActionBarActivity {
                     AlertDialog dialog = builder.create();
                     dialog.show();
                 } else {
+
+                    mProgressBar.setVisibility(View.VISIBLE);
+
                     ParseUser.logInInBackground(username,password, new LogInCallback() {
                         @Override
                         public void done(ParseUser user, ParseException e) {
 
+                            mProgressBar.setVisibility(View.INVISIBLE);
+
                             if(e == null) {
                                 //success
+
+
+
                                 //update parseinstallation afther login success
                                 SoShopBetaApplication.updateParseInstallation(user);
 
-                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                //ADD FLAG SO USER CANNOT PRESS BACK TO SIGN UP ACTIVITY AGAIN
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startMainFeed();
 
-                                startActivity(intent);
                             } else {
                                 //Fail
                                 //Show dialog
@@ -102,9 +120,55 @@ public class LoginActivity extends ActionBarActivity {
             }
         });
 
+        mFacebookLogInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                onFacebookLogInButtonClicked();
 
+            }
+        });
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        ParseFacebookUtils.finishAuthentication(requestCode, resultCode, data);
+
+    }
+
+    private void startMainFeed() {
+        Intent intent = new Intent(this, MainActivity.class);
+        //ADD FLAG SO USER CANNOT PRESS BACK TO SIGN UP ACTIVITY AGAIN
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        startActivity(intent);
+    }
+
+    private void onFacebookLogInButtonClicked() {
+
+        ParseFacebookUtils.logIn(Arrays.asList("email", ParseFacebookUtils.Permissions.Friends.ABOUT_ME),this,new LogInCallback() {
+            @Override
+            public void done(ParseUser user, ParseException e) {
+
+                if (user == null) {
+                    Log.d(TAG, "Uh oh. The user cancelled the Facebook login.");
+                    Toast.makeText(LoginActivity.this, "ParseUser return Null" ,Toast.LENGTH_SHORT).show();
+
+                } else if (user.isNew()) {
+                    Log.d(TAG, "User signed up and logged in through Facebook!");
+
+                    startMainFeed();
+                } else {
+                    Log.d(TAG, "User logged in through Facebook!");
+
+                    startMainFeed();
+                }
+
+            }
+        });
     }
 
 

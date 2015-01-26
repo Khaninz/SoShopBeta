@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -33,9 +34,9 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
 
     //member variable
     protected Button mPostButton;
-
     protected ParseUser mCurrentUser;
     protected ParseRelation mFriendsRelation;
+    protected ProgressBar mProgressBar;
 
     //member for Recycler View
     protected RecyclerView mRecyclerView;
@@ -53,6 +54,9 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         // Inflate the layout for this fragment
 
         View rootView = inflater.inflate(R.layout.fragment_main_feed, container, false);
+
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.progressBar);
+        mProgressBar.setVisibility(View.INVISIBLE);
 
         //START:Initialize the button for posting.
         mPostButton = (Button) rootView.findViewById(R.id.postButton);
@@ -81,10 +85,18 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
     public void onResume() {
         super.onResume();
 
-        try {
-            retrieveMainFeed();
-        } catch (ParseException e) {
-            e.printStackTrace();
+        if (ParseUser.getCurrentUser() == null) {
+            //no current user
+
+        } else {
+            //user already logged in
+            mProgressBar.setVisibility(View.VISIBLE);
+            try {
+                retrieveMainFeed();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
         }
     }
 
@@ -95,9 +107,6 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         mCurrentUser = ParseUser.getCurrentUser();
         mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_FRIENDS_RELATION);
 
-
-
-
         ArrayList<ParseUser> friends = (ArrayList<ParseUser>) mFriendsRelation.getQuery().find(); //program auto add throws for getQuery.find
         ArrayList<String> friendsIds = new ArrayList<>(friends.size()); //create ArrayList String to be used in queries below
         int i = 0;
@@ -105,7 +114,6 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
             friendsIds.add(i, friend.getObjectId());
             i++;
         }
-
 
         // 2 conditions in query have to work as Or operator
         //query for user's post
@@ -134,18 +142,18 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
                     if (e == null){
                     //Query Success
 
-                    if (mAdapter == null) {
-                        mAdapter = new FeedViewAdapter(soShopPostObjects, getActivity());
-                        mRecyclerView.setAdapter(mAdapter);
-                    } else{}
-                        mAdapter.notifyDataSetChanged();
+                        mProgressBar.setVisibility(View.INVISIBLE);
+
+                        if (mAdapter == null) {
+                            mAdapter = new FeedViewAdapter(soShopPostObjects, getActivity());
+                            mRecyclerView.setAdapter(mAdapter);
+                        } else{}
+                            mAdapter.notifyDataSetChanged();
                 }
 
             }
         });
 
-
     }
-
 
 }

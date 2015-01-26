@@ -258,14 +258,17 @@ public class PostActivity extends ActionBarActivity {
 
                     //create Parse Object for post.
                     ParseObject soShopPost = new ParseObject(ParseConstants.CLASS_SOSHOPPOST);
+                    ParseUser currentUser = ParseUser.getCurrentUser();
 
-                    soShopPost.put(ParseConstants.KEY_SENDER_IDS, ParseUser.getCurrentUser().getObjectId()); //add sender Id
+                    soShopPost.put(ParseConstants.KEY_SENDER_IDS, currentUser.getObjectId()); //add sender Id
                     soShopPost.put(ParseConstants.KEY_ITEM_NAME, itemName);
                     soShopPost.put(ParseConstants.KEY_ITEM_PRICE, itemPriceInt);
                     soShopPost.put(ParseConstants.KEY_CURRENCY, currency);
                     soShopPost.put(ParseConstants.KEY_CAPTION, caption);
                     soShopPost.put(ParseConstants.KEY_RECIPIENT_IDS, recipientsIds);
                     soShopPost.put(ParseConstants.KEY_IMAGE_I,mFile);
+                    soShopPost.put(ParseConstants.KEY_SENDER_FIRST_NAME,currentUser.get(ParseConstants.KEY_FIRST_NAME));
+                    soShopPost.put(ParseConstants.KEY_SENDER_LAST_NAME,currentUser.get(ParseConstants.KEY_LAST_NAME));
 
                     soShopPost.saveInBackground(new SaveCallback() {
                         @Override

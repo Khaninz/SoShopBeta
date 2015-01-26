@@ -2,12 +2,16 @@ package soshop.social.soshop;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,6 +20,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.parse.ParseUser;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import soshop.social.soshop.Fragment.InviteFriendsFragment;
 import soshop.social.soshop.Fragment.MainFeedFragment;
@@ -51,10 +58,21 @@ public class MainActivity extends ActionBarActivity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
+        //Log for facebook key hash
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(
+                    "soshop.social.soshop",
+                    PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException e) {
 
+        } catch (NoSuchAlgorithmException e) {
 
-
-
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //CHECK IF THERE IS CURRENT USER LOGIN IN.
@@ -62,6 +80,7 @@ public class MainActivity extends ActionBarActivity
         if (currentUser == null) {
 
             navigateToLogin();
+
         } else {
 
             Log.i(TAG, currentUser.getUsername());

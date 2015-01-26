@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
     android:layout_marginTop="10dp">
@@ -29,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_toRightOf="@+id/senderImage"
             android:layout_alignTop="@+id/senderImage"
-            android:text="Sender Name"/>
+            android:text="Sender Name" />
 
         <TextView
             android:id="@+id/createdAt"
@@ -37,19 +38,17 @@
             android:layout_height="wrap_content"
             android:layout_toRightOf="@+id/senderImage"
             android:layout_below="@+id/senderName"
-            android:text="created at..."
-            />
+            android:text="created at..." />
 
         <Spinner
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            >
+            android:layout_alignParentEnd="true">
 
 
-            </Spinner>
+        </Spinner>
 
         <TextView
             android:id="@+id/captionText"
@@ -57,7 +56,7 @@
             android:layout_height="wrap_content"
             android:text="This is caption..."
             android:layout_alignLeft="@id/senderImage"
-            android:layout_below="@id/senderImage"/>
+            android:layout_below="@id/senderImage" />
 
 
     </RelativeLayout>
@@ -74,42 +73,49 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/itemPrice"
-                android:text="Item Price..."
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true"/>
+        <TextView
+            android:id="@+id/itemName"
+            android:text="Item name..."
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-            <TextView
-                android:id="@+id/itemOptionalLocation"
-                android:text="Item Location"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_below="@id/itemPrice"
-                />
+        <TextView
+            android:id="@+id/itemPrice"
+            android:text="Item Price..."
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true" />
 
-        </RelativeLayout>
+        <TextView
+            android:id="@+id/itemOptionalLocation"
+            android:text="Item Location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/itemPrice" />
+
+    </RelativeLayout>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
 
-            <ImageView
-                android:layout_width="100dp"
-                android:layout_height="3dp"
-                android:background="#ff7400"/>
-            <ImageView
-                android:layout_width="fill_parent"
-                android:layout_height="3dp"
-                android:background="#009999"
-                />
-        </LinearLayout>
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="3dp"
+            android:background="#ff7400" />
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="3dp"
+            android:background="#009999" />
+    </LinearLayout>
 
     <RelativeLayout
         android:orientation="horizontal"
@@ -124,14 +130,15 @@
             android:layout_centerHorizontal="true"
             android:orientation="vertical"
             android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            >
+            android:layout_height="wrap_content">
+
             <TextView
                 android:layout_gravity="center"
                 android:text="(0)"
                 android:id="@+id/totalComment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+
             <Button
                 android:id="@+id/commentButton"
                 android:text="@string/comment_button_label"
@@ -146,12 +153,14 @@
             android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
+
             <TextView
                 android:layout_gravity="center"
                 android:text="(0)"
                 android:id="@+id/totalSoShop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+
             <Button
                 android:id="@+id/soShopButton"
                 android:text="@string/soshop_button_label"
@@ -161,18 +170,19 @@
         </LinearLayout>
 
         <LinearLayout
-           android:id="@+id/rightLinearLayout"
+            android:id="@+id/rightLinearLayout"
             android:layout_toRightOf="@+id/centerLinearLayout"
             android:orientation="vertical"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            >
+            android:layout_height="wrap_content">
+
             <TextView
                 android:layout_gravity="center"
                 android:text="(0)"
                 android:id="@+id/totalNoShop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+
             <Button
                 android:id="@+id/noShopButton"
                 android:text="@string/noshop_button_label"
@@ -182,6 +192,8 @@
         </LinearLayout>
 
 
-        </RelativeLayout>
+    </RelativeLayout>
+
+
 
 </LinearLayout>
