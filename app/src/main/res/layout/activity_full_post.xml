@@ -1,0 +1,183 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="soshop.social.soshop.FullPostActivity">
+
+    <RelativeLayout
+        android:layout_margin="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/senderImage"
+        android:layout_width="@dimen/sender_image_width_height_dimension"
+        android:layout_height="@dimen/sender_image_width_height_dimension"
+        android:background="@android:color/darker_gray"
+        android:layout_marginRight="5dp"
+
+        />
+
+    <TextView
+        android:id="@+id/senderName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/senderImage"
+        android:layout_alignTop="@+id/senderImage"
+        android:text="Sender Name" />
+
+    <TextView
+        android:id="@+id/createdAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/senderImage"
+        android:layout_below="@+id/senderName"
+        android:text="created at..." />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"/>
+
+    <TextView
+        android:id="@+id/captionText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="This is caption..."
+        android:layout_alignLeft="@id/senderImage"
+        android:layout_below="@id/senderImage"
+        android:layout_marginTop="5dp"/>
+
+    <ImageView
+        android:id="@+id/itemImage1"
+        android:layout_below="@+id/captionText"
+        android:layout_marginTop="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/temp_image_height_dimension"
+        android:background="#696969"
+
+        />
+
+    <TextView
+        android:id="@+id/itemName"
+        android:text="Item name..."
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/itemImage1"
+        android:layout_marginTop="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/itemPrice"
+        android:text="Item Price..."
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/itemImage1"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="5dp"
+        />
+
+    <TextView
+        android:id="@+id/itemOptionalLocation"
+        android:text="Item Location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/itemPrice" />
+
+    <LinearLayout
+        android:id="@+id/reviewBar"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/itemOptionalLocation">
+
+        <ImageView
+            android:id="@+id/soShopBar"
+            android:layout_width="200dp"
+            android:layout_height="3dp"
+            android:background="@color/soshop_color" />
+
+        <ImageView
+            android:id="@+id/noShopBar"
+            android:layout_width="fill_parent"
+            android:layout_height="3dp"
+            android:background="@color/noshop_color" />
+    </LinearLayout>
+
+    <TextView
+        android:text="(0)"
+        android:id="@+id/totalComment"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="45dp"
+        android:layout_below="@+id/itemImage1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/commentButton"
+        android:text="@string/comment_button_label"
+        android:layout_below="@+id/totalComment"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/soShopButton"
+        android:text="@string/soshop_button_label"
+        android:layout_alignTop="@+id/commentButton"
+        android:layout_toLeftOf="@+id/commentButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/noShopButton"
+        android:text="@string/noshop_button_label"
+        android:layout_alignTop="@+id/commentButton"
+        android:layout_toRightOf="@+id/commentButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:text="(0)"
+        android:id="@+id/totalNoShop"
+        android:layout_alignTop="@+id/totalComment"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:text="(0)"
+        android:id="@+id/totalSoShop"
+        android:layout_alignTop="@+id/totalComment"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/sendCommentButton"
+        android:layout_width="wrap_content"
+        android:text="Send comment"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        />
+
+    <EditText
+        android:id="@+id/commentInputEditText"
+        android:layout_toLeftOf="@+id/sendCommentButton"
+        android:hint="Add your comment here"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        />
+
+
+</RelativeLayout>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="currency_array">
+        <item>฿</item>
+        <item>$</item>
+        <item>₩</item>
+        <item>¥</item>
+
+    </string-array>
+
+    <string-array name="privacy_array">
+        <item>PUBLIC</item>
+        <item>PRIVATE</item>
+
+
+    </string-array>
+
+
+
+
+</resources>

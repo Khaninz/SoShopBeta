@@ -23,6 +23,7 @@ public final class ParseConstants {
     public static final String KEY_IMAGE_II = "itemImage2";
     public static final String TYPE_IMAGE = "image" ;
     public static final String KEY_LOCATION_DESCRIPTION = "itemLocationDescription";
+    public static final String KEY_IS_PRIVATE = "isPrivate";
 
 
 

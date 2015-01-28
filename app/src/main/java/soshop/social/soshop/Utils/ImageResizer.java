@@ -13,21 +13,7 @@ public class ImageResizer {
 	 * @param targetHeight The height to resize to.
 	 * @returns 		   The resized image as a Bitmap.
 	 */
-	public static Bitmap resizeImage(byte[] imageData, int targetWidth, int targetHeight) {
-		// Use BitmapFactory to decode the image
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        
-        // inSampleSize is used to sample smaller versions of the image
-        options.inSampleSize = calculateInSampleSize(options, targetWidth, targetHeight);
-        
-        // Decode bitmap with inSampleSize and target dimensions set
-        options.inJustDecodeBounds = false;	
-        
-        Bitmap reducedBitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length, options);
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(reducedBitmap, targetWidth, targetHeight, false);
 
-        return resizedBitmap;        
-	}
 
 	public static Bitmap resizeImageMaintainAspectRatio(byte[] imageData, int shorterSideTarget) {
         Pair<Integer, Integer> dimensions = getDimensions(imageData);
@@ -54,17 +40,34 @@ public class ImageResizer {
         
 		return resizeImage(imageData, targetWidth, targetHeight);
 	}
-	
-	public static Pair<Integer, Integer> getDimensions(byte[] imageData) {
-		// Use BitmapFactory to decode the image
+
+    public static Pair<Integer, Integer> getDimensions(byte[] imageData) {
+        // Use BitmapFactory to decode the image
         BitmapFactory.Options options = new BitmapFactory.Options();
 
         // Only decode the bounds of the image, not the whole image, to get the dimensions
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeByteArray(imageData, 0, imageData.length, options);
-        
+
         return new Pair<Integer, Integer>(options.outWidth, options.outHeight);
-	}
+    }
+
+    public static Bitmap resizeImage(byte[] imageData, int targetWidth, int targetHeight) {
+        // Use BitmapFactory to decode the image
+        BitmapFactory.Options options = new BitmapFactory.Options();
+
+        // inSampleSize is used to sample smaller versions of the image
+        options.inSampleSize = calculateInSampleSize(options, targetWidth, targetHeight);
+
+        // Decode bitmap with inSampleSize and target dimensions set
+        options.inJustDecodeBounds = false;
+
+        Bitmap reducedBitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length, options);
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(reducedBitmap, targetWidth, targetHeight, false);
+
+        return resizedBitmap;
+    }
+
 	
 	public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
 	    // Raw height and width of image

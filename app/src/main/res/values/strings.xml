@@ -35,5 +35,6 @@
     <string name="soshop_button_label">SoShop</string>
     <string name="comment_button_label">comment</string>
     <string name="noshop_button_label">NoShop</string>
+    <string name="title_activity_full_post">FullPostActivity</string>
 
 </resources>

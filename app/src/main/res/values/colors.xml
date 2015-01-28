@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="background_light_grey">#e5e5e5</color>
+    <color name="soshop_color">#ff7400</color>
+    <color name="noshop_color">#009999</color>
 </resources>
