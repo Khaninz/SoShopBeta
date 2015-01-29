@@ -2,6 +2,7 @@ package soshop.social.soshop;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -23,6 +24,7 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import soshop.social.soshop.Utils.FileHelper;
+import soshop.social.soshop.Utils.ImageResizer;
 import soshop.social.soshop.Utils.ParseConstants;
 
 
@@ -83,7 +85,7 @@ public class PostActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
 
-                if(mMediaUri != null){
+                if (mMediaUri != null) {
                     mMediaUri = null;
                     mItemPicture1.setImageDrawable(null);
                 }
@@ -97,7 +99,7 @@ public class PostActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
 
-                if(mMediaUri != null){
+                if (mMediaUri != null) {
                     mMediaUri = null;
                     mItemPicture1.setImageDrawable(null);
                 }
@@ -128,18 +130,37 @@ public class PostActivity extends ActionBarActivity {
                         data.getData(), Toast.LENGTH_LONG).show();
             }
 
-//            if (mMediaUri != null ) {
-//                mItemPicture1.setImageURI(mMediaUri);
-////                Picasso.with(this).load(mMediaUri).into(mItemPicture1);
-//            }
-
+            //Get file bytes to be used in bitmap and reduced for upload.
             byte[] fileBytes = FileHelper.getByteArrayFromFile(this, mMediaUri);
+
+            //Check if taken from camera or else, if camera then rotate first
+            if (requestCode == TAKE_PICTURE_REQUEST_CODE) {
+                Bitmap bitmap = ImageResizer.resizeImageMaintainAspectRatio(fileBytes, 320);
+
+                Toast.makeText(this, "Width: " + bitmap.getWidth() + " Height: " + bitmap.getHeight(), Toast.LENGTH_LONG).show();
+
+//                //Picture taken from camera is rotated by 90 degree by default, write code to override the default
+//                Matrix matrix = new Matrix();
+//                matrix.postRotate(90);
+//                bitmap = Bitmap.createBitmap(bitmap, 0,
+//                        0, bitmap.getWidth(), bitmap.getHeight(),
+//                        matrix, true);
+
+
+                mItemPicture1.setImageBitmap(bitmap);
+
+            } else {
+
+                Bitmap bitmap = ImageResizer.resizeImageMaintainAspectRatio(fileBytes, 320);
+                mItemPicture1.setImageBitmap(bitmap);
+
+            }
+
 
             if (fileBytes == null) {
                 //return null; //prevent crash and let other user try different files
-            }
-            else {
-                fileBytes = FileHelper.reduceImageForUpload(fileBytes);
+            } else {
+                fileBytes = FileHelper.reduceImageForUpload(fileBytes, requestCode);
             }
 
             mFile = new ParseFile("image1", fileBytes);
@@ -155,9 +176,9 @@ public class PostActivity extends ActionBarActivity {
         mCurrentUser = ParseUser.getCurrentUser();
         mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_FRIENDS_RELATION);
 
-        if (mMediaUri != null) {
-            mItemPicture1.setImageURI(mMediaUri);
-        }
+//        if (mMediaUri != null) {
+//            mItemPicture1.setImageURI(mMediaUri);
+//        }
 
 
     }
@@ -329,7 +350,7 @@ public class PostActivity extends ActionBarActivity {
         soShopPost.put(ParseConstants.KEY_LOCATION_DESCRIPTION, locationDescription);
 
         Boolean isPravate = null;
-        if (mIsPrivateSpinner.getSelectedItem().toString().equals("PRIVATE")){
+        if (mIsPrivateSpinner.getSelectedItem().toString().equals("PRIVATE")) {
             isPravate = true;
         } else {
             isPravate = false;

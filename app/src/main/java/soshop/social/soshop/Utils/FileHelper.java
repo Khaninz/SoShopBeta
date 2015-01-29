@@ -2,6 +2,7 @@ package soshop.social.soshop.Utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.util.Log;
 
@@ -18,6 +19,9 @@ public class FileHelper {
 	public static final String TAG = FileHelper.class.getSimpleName();
 	
 	public static final int SHORT_SIDE_TARGET = 1280;
+
+    private static final int TAKE_PICTURE_REQUEST_CODE = 0;
+    private static final int CHOOSE_FROM_GALLERY_REQUES_CODE = 1;
 	
 	public static byte[] getByteArrayFromFile(Context context, Uri uri) {
 		byte[] fileBytes = null;
@@ -63,8 +67,17 @@ public class FileHelper {
         return fileBytes;
 	}
 	
-	public static byte[] reduceImageForUpload(byte[] imageData) {
+	public static byte[] reduceImageForUpload(byte[] imageData, int requestCode) {
 		Bitmap bitmap = ImageResizer.resizeImageMaintainAspectRatio(imageData, SHORT_SIDE_TARGET);
+
+        if (requestCode == TAKE_PICTURE_REQUEST_CODE){
+
+            Matrix matrix = new Matrix();
+            matrix.postRotate(90);
+            bitmap = Bitmap.createBitmap(bitmap, 0,
+                    0, bitmap.getWidth(), bitmap.getHeight(),
+                    matrix, true);
+        }
 		
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
