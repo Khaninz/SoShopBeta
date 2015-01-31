@@ -1,25 +1,27 @@
 package soshop.social.soshop;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.text.format.DateUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
-import com.parse.ParseRelation;
-import com.parse.ParseUser;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
+import java.util.Date;
 
 import soshop.social.soshop.Utils.ParseConstants;
 
@@ -40,13 +42,6 @@ public class FullPostActivity extends ActionBarActivity {
     private ImageView mSoShopBar;
     private Button mCommentButton;
 
-    ParseUser mCurrentUser;
-    ParseRelation mCurrentUserVoteSoShopRelation;
-    ParseRelation mCurrentUserVoteNoShopRelation;
-    private ArrayList<ParseObject> mVotedSoShopByUser;
-    private ArrayList<Object> mVotedSoShopByUserIds;
-    private ArrayList<ParseObject> mVotedNoShopByUser;
-    private ArrayList<Object> mVotedNoShopByUserIds;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,62 +63,70 @@ public class FullPostActivity extends ActionBarActivity {
         mCommentButton = (Button) findViewById(R.id.commentButton);
 
 
-        mCurrentUser = ParseUser.getCurrentUser();
-        mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_SOSHOP_VOTE_RELATION);
-        mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_NOSHOP_VOTE_RELATION);
-        try {
-            //get relation for SoShop to render and button status
-            mVotedSoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteSoShopRelation.getQuery().find();
-            mVotedSoShopByUserIds = new ArrayList<>(mVotedSoShopByUser.size());
-            if (mVotedSoShopByUser != null) {
-                int index = 0;
-                for (ParseObject votedSoShop : mVotedSoShopByUser) {
-                    mVotedSoShopByUserIds.add(index, votedSoShop.getObjectId());
-                    index++;
-                }
-            }
-            //get relation for NoShop to render and init button status
-            mVotedNoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteNoShopRelation.getQuery().find();
-            mVotedNoShopByUserIds = new ArrayList<>(mVotedNoShopByUser.size());
-            if (mVotedNoShopByUser != null) {
-                int index = 0;
-                for (ParseObject votedNoShop : mVotedNoShopByUser) {
-                    mVotedNoShopByUserIds.add(index, votedNoShop.getObjectId());
-                    index++;
-                }
-            }
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-
         Intent intent = getIntent();
         String soShopPostObjectId = intent.getStringExtra("soShopPostObjectId");
-        Toast.makeText(this, soShopPostObjectId, Toast.LENGTH_LONG).show();
 
-        ParseQuery<ParseObject> selectedPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
-        try {
+        final Context mContext = getBaseContext();
 
-            ParseObject selectedPost = selectedPostQuery.get(soShopPostObjectId);
+        ParseQuery query = ParseQuery.getQuery(ParseConstants.CLASS_SOSHOPPOST);
+        query.getInBackground(soShopPostObjectId, new GetCallback() {
+            @Override
+            public void done(ParseObject selectedPost, ParseException e) {
+                Toast.makeText(mContext, selectedPost.getObjectId(), Toast.LENGTH_LONG).show();
 
-            //START: add image from Parse to imageView using tool from Picasso
-            ParseFile file = selectedPost.getParseFile(ParseConstants.KEY_IMAGE_I);// get the file in parse object
-            Uri fileUri = Uri.parse(file.getUrl());//get the uri of the file.
-            Picasso.with(this).load(fileUri.toString()).into(mImageViewI);
-            //END: add image from Parse to imageView using tool from Picasso
+                addDetailToFullPost(selectedPost, mContext);
 
-
-            //START: disable vote if it is user's own post
-            if (mCurrentUser.getObjectId().equals(selectedPost.get(ParseConstants.KEY_SENDER_IDS))) {
-                mSoShopButton.setEnabled(false);
-                mNoShopButton.setEnabled(false);
             }
+        });
 
 
-        } catch (ParseException e) {
-            e.printStackTrace();
+    }
+
+    private void addDetailToFullPost(ParseObject selectedPost, Context context) {
+
+        String caption = (String) selectedPost.get(ParseConstants.KEY_CAPTION);
+        mCaptionTextView.setText(caption);
+        //SoShop number
+        int soShopNumber = selectedPost.getInt(ParseConstants.KEY_TOTAL_SOSHOP);
+        mSoShopNumberTextView.setText("(" + soShopNumber + ")");
+        //NoShop number
+        int noShopNumber = selectedPost.getInt(ParseConstants.KEY_TOTAL_NOSHOP);
+        mNoShopNumberTextView.setText("(" + noShopNumber + ")");
+        //item name
+        String itemName = (String) selectedPost.get(ParseConstants.KEY_ITEM_NAME);
+        mItemName.setText(itemName);
+        //item price with currency
+        int itemPriceInt = (int) selectedPost.get(ParseConstants.KEY_ITEM_PRICE);
+        String itemPrice = itemPriceInt +"";
+        String currency = (String) selectedPost.get(ParseConstants.KEY_CURRENCY);
+        mItemPrice.setText(currency + " " + itemPrice);
+
+        //item location description
+        String itemLocation = (String) selectedPost.get(ParseConstants.KEY_LOCATION_DESCRIPTION);
+        if (itemLocation == null ){
+           mItemOptionalLocation.setVisibility(View.INVISIBLE);
+        } else {
+            mItemOptionalLocation.setText(itemLocation);
+            mItemOptionalLocation.setVisibility(View.VISIBLE);
         }
+
+        //first name + last name
+        String firstName = (String) selectedPost.get(ParseConstants.KEY_SENDER_FIRST_NAME);
+        String lastName = (String) selectedPost.get(ParseConstants.KEY_SENDER_LAST_NAME);
+        mSenderName.setText(firstName + " " + lastName);
+
+        //time created
+        Date createdAt = selectedPost.getCreatedAt(); //object from parse
+        //best way to get time, for now. 17/12/14
+        long now = new Date().getTime();
+        String convertedDate = DateUtils.getRelativeTimeSpanString(createdAt.getTime(), now, DateUtils.SECOND_IN_MILLIS).toString();
+        mCreatedAt.setText(convertedDate);
+
+        //START: add image from Parse to imageView using tool from Picasso
+        ParseFile file = selectedPost.getParseFile(ParseConstants.KEY_IMAGE_I);// get the file in parse object
+        Uri fileUri = Uri.parse(file.getUrl());//get the uri of the file.
+        Picasso.with(context).load(fileUri.toString()).into(mImageViewI);
+        //END: add image from Parse to imageView using tool from Picasso
 
     }
 

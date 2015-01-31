@@ -358,6 +358,7 @@ public class PostActivity extends ActionBarActivity {
 
         soShopPost.put(ParseConstants.KEY_IS_PRIVATE, isPravate);
 
+
         soShopPost.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {

@@ -204,12 +204,12 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         //END: add image from Parse to imageView using tool from Picasso
 
         //START: disable vote if it is user's own post
-        if (mCurrentUser.getObjectId().equals(soShopPost.get(ParseConstants.KEY_SENDER_IDS)) ){
+        if (soShopPost.get(ParseConstants.KEY_SENDER_IDS).equals(ParseUser.getCurrentUser().getObjectId())) {
             viewHolder.getSoShopButton().setEnabled(false);
             viewHolder.getNoShopButton().setEnabled(false);
         } else {
             initSoShopButtonStatus(viewHolder, i, soShopPost);
-            initNoShopButtongStatus(viewHolder, i, soShopPost);
+            initNoShopButtonStatus(viewHolder, i, soShopPost);
 
         }
         //END: disable vote if it is user's own post
@@ -218,7 +218,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
 
     }
 
-    private void initNoShopButtongStatus(final ViewHolder viewHolder, final int i, final ParseObject soShopPost) {
+    private void initNoShopButtonStatus(final ViewHolder viewHolder, final int i, final ParseObject soShopPost) {
         //START: SET ACTION and VIEW for NOSHOP BUTTON
         final ParseRelation<ParseUser> isVotedNoShopRelation = soShopPost.getRelation(ParseConstants.KEY_IS_VOTE_NOSHOP_RELATION);
 
