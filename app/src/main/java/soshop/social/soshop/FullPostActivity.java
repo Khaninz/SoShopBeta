@@ -19,6 +19,8 @@ import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseRelation;
+import com.parse.ParseUser;
 import com.squareup.picasso.Picasso;
 
 import java.util.Date;
@@ -41,6 +43,8 @@ public class FullPostActivity extends ActionBarActivity {
     private TextView mCreatedAt;
     private ImageView mSoShopBar;
     private Button mCommentButton;
+
+    private ParseObject mSelectedPost;
 
 
     @Override
@@ -73,8 +77,17 @@ public class FullPostActivity extends ActionBarActivity {
             @Override
             public void done(ParseObject selectedPost, ParseException e) {
                 Toast.makeText(mContext, selectedPost.getObjectId(), Toast.LENGTH_LONG).show();
-
+                mSelectedPost = selectedPost;
                 addDetailToFullPost(selectedPost, mContext);
+
+            }
+        });
+
+        ParseRelation<ParseUser> isVotedSoShopRelation = mSelectedPost.getRelation(ParseConstants.KEY_IS_VOTE_SOSHOP_RELATION);
+
+        mSoShopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
             }
         });

@@ -43,21 +43,25 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
     //member for Parse
     ParseUser mCurrentUser;
     ParseRelation<ParseObject> mCurrentUserVoteSoShopRelation;
-    ArrayList<ParseObject> mVotedSoShopByUser;
-    ArrayList<String> mVotedSoShopByUserIds;
+    ArrayList<ParseObject> mPostVotedSoShopByUser;
+    ArrayList<String> mPostIdsVotedSoShopByUser;
     ParseRelation<ParseObject> mCurrentUserVoteNoShopRelation;
-    ArrayList<ParseObject> mVotedNoShopByUser;
-    ArrayList<String> mVotedNoShopByUserIds;
+    ArrayList<ParseObject> mPostVotedNoShopByUser;
+    ArrayList<String> mPostIdsVotedNoShopByUser;
 
     //MAIN CONSTRUCTOR
-    public FeedViewAdapter (List<ParseObject> soShopPosts, Context context){
+    public FeedViewAdapter (List<ParseObject> soShopPosts, Context context, ArrayList<String> postIdsVotedSoShopByUser, ArrayList<String> postIdsVotedNoShopByUser){
 
         mContext = context;
         mSoShopPosts = soShopPosts;
-        numberOfPosts = soShopPosts.size();
+        numberOfPosts = mSoShopPosts.size();
 
         mSoShopNumberSet = new int[numberOfPosts];
         mNoShopNumberSet = new int[numberOfPosts];
+
+        mPostIdsVotedSoShopByUser = postIdsVotedSoShopByUser;
+        mPostIdsVotedNoShopByUser = postIdsVotedNoShopByUser;
+
 
     }
 
@@ -144,36 +148,6 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         View v = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.soshop_feed_items, viewGroup, false);
 
-        mCurrentUser = ParseUser.getCurrentUser();
-        mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_SOSHOP_VOTE_RELATION);
-        mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_NOSHOP_VOTE_RELATION);
-        try {
-            //get relation for SoShop to render and button status
-            mVotedSoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteSoShopRelation.getQuery().find();
-            mVotedSoShopByUserIds = new ArrayList<>(mVotedSoShopByUser.size());
-            if (mVotedSoShopByUser != null){
-                int index = 0;
-                for(ParseObject votedSoShop: mVotedSoShopByUser){
-                    mVotedSoShopByUserIds.add(index,votedSoShop.getObjectId());
-                    index++;
-                }
-            }
-            //get relation for NoShop to render and init button status
-            mVotedNoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteNoShopRelation.getQuery().find();
-            mVotedNoShopByUserIds = new ArrayList<>(mVotedNoShopByUser.size());
-            if (mVotedNoShopByUser != null){
-                int index = 0;
-                for(ParseObject votedNoShop: mVotedNoShopByUser){
-                    mVotedNoShopByUserIds.add(index,votedNoShop.getObjectId());
-                    index++;
-                }
-            }
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-
         return new ViewHolder(v);
     }
 
@@ -222,7 +196,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         //START: SET ACTION and VIEW for NOSHOP BUTTON
         final ParseRelation<ParseUser> isVotedNoShopRelation = soShopPost.getRelation(ParseConstants.KEY_IS_VOTE_NOSHOP_RELATION);
 
-        if (mVotedNoShopByUserIds.contains(soShopPost.getObjectId())){
+        if (mPostIdsVotedNoShopByUser.contains(soShopPost.getObjectId())){
             viewHolder.getNoShopButton().setText("Voted!");
             viewHolder.getSoShopButton().setEnabled(false);
         }
@@ -320,7 +294,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
     private void initSoShopButtonStatus(final ViewHolder viewHolder, final int i, final ParseObject soShopPost) {
         //START: SET ACTION and VIEW for SOSHOP BUTTON
         final ParseRelation<ParseUser> isVotedSoShopRelation = soShopPost.getRelation(ParseConstants.KEY_IS_VOTE_SOSHOP_RELATION);
-        if (mVotedSoShopByUserIds.contains(soShopPost.getObjectId())){
+        if (mPostIdsVotedSoShopByUser.contains(soShopPost.getObjectId())){
             viewHolder.getSoShopButton().setText("Voted!");
             viewHolder.getNoShopButton().setEnabled(false);
         }
