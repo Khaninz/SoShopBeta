@@ -24,6 +24,7 @@ public final class ParseConstants {
     public static final String TYPE_IMAGE = "image" ;
     public static final String KEY_LOCATION_DESCRIPTION = "itemLocationDescription";
     public static final String KEY_IS_PRIVATE = "isPrivate";
+    public static final String KEY_RELATION_COMMENT = "comment";
 
 
 
@@ -39,5 +40,11 @@ public final class ParseConstants {
     public static final String KEY_FIRST_NAME = "firstName";
     public static final String KEY_LAST_NAME = "lastName";
 
+    //CLASS COMMENT
+    public static final String CLASS_COMMENT = "Comment";
+    public static final String KEY_COMMENT_TEXT = "commentText";
+    public static final String KEY_RELATION_SENDER = "sender";
+    public static final String KEY_RELATION_TARGET_POST = "targetPost";
+    public static final String KEY_SENDER_ID = "senderId";
 
 }

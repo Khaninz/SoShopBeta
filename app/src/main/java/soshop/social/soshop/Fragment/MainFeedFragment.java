@@ -78,9 +78,9 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
             //get relation for SoShop to render and button status
             mPostVotedSoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteSoShopRelation.getQuery().find();
             mPostIdsVotedSoShopByUser = new ArrayList<>(mPostVotedSoShopByUser.size());
-            if (mPostVotedSoShopByUser != null){
+            if (mPostVotedSoShopByUser != null) {
                 int index = 0;
-                for(ParseObject votedSoShop: mPostVotedSoShopByUser){
+                for (ParseObject votedSoShop : mPostVotedSoShopByUser) {
                     mPostIdsVotedSoShopByUser.add(index, votedSoShop.getObjectId());
                     index++;
                 }
@@ -88,9 +88,9 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
             //get relation for NoShop to render and init button status
             mPostVotedNoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteNoShopRelation.getQuery().find();
             mPostIdsVotedNoShopByUser = new ArrayList<>(mPostVotedNoShopByUser.size());
-            if (mPostVotedNoShopByUser != null){
+            if (mPostVotedNoShopByUser != null) {
                 int index = 0;
-                for(ParseObject votedNoShop: mPostVotedNoShopByUser){
+                for (ParseObject votedNoShop : mPostVotedNoShopByUser) {
                     mPostIdsVotedNoShopByUser.add(index, votedNoShop.getObjectId());
                     index++;
                 }
@@ -149,10 +149,10 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
             retrieveFeedFromServer();
         } catch (ParseException e) {
             e.printStackTrace();
-            Toast.makeText(getActivity(),"Load from server fail, please try again",Toast.LENGTH_LONG).show();;
+            Toast.makeText(getActivity(), "Load from server fail, please try again", Toast.LENGTH_LONG).show();
+            ;
         }
         //END: guery and save objects from server
-
 
 
         return rootView;
@@ -165,15 +165,16 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         super.onResume();
 
         mCurrentUser = ParseUser.getCurrentUser();
-        if (mCurrentUser != null){
+        if (mCurrentUser != null) {
 
-        try {
-            retrieveFeedFromLocal();
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Toast.makeText(getActivity(),"Load from local fail, please try again",Toast.LENGTH_LONG).show();;
+            try {
+                retrieveFeedFromLocal();
+            } catch (ParseException e) {
+                e.printStackTrace();
+                Toast.makeText(getActivity(), "Load from local fail, please try again", Toast.LENGTH_LONG).show();
+                ;
 
-        }
+            }
 
 
         } else {
@@ -233,7 +234,7 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
                     mProgressBar.setVisibility(View.INVISIBLE);
 
                     if (mAdapter == null) {
-                        mAdapter = new FeedViewAdapter(soShopPostObjects, getActivity(), mPostIdsVotedSoShopByUser, mPostIdsVotedNoShopByUser );
+                        mAdapter = new FeedViewAdapter(soShopPostObjects, getActivity(), mPostIdsVotedSoShopByUser, mPostIdsVotedNoShopByUser);
                         mRecyclerView.setAdapter(mAdapter);
                     }
                 } else {
@@ -250,7 +251,7 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         mCurrentUser = ParseUser.getCurrentUser();
         mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_FRIENDS_RELATION);
 
-        if (mSoShopPostObjects != null){
+        if (mSoShopPostObjects != null) {
             mSoShopPostObjects.clear();
         }
 
@@ -297,13 +298,13 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
                     ParseObject.pinAllInBackground(mSoShopPostObjects);
 
                     mProgressBar.setVisibility(View.INVISIBLE);
-                    if (mSwipeRefreshLayout.isRefreshing()){
+                    if (mSwipeRefreshLayout.isRefreshing()) {
                         mSwipeRefreshLayout.setRefreshing(false);
                     }
 
                     //if (mAdapter == null) {
-                        mAdapter = new FeedViewAdapter(mSoShopPostObjects, getActivity(),  mPostIdsVotedSoShopByUser, mPostIdsVotedNoShopByUser);
-                        mRecyclerView.setAdapter(mAdapter);
+                    mAdapter = new FeedViewAdapter(mSoShopPostObjects, getActivity(), mPostIdsVotedSoShopByUser, mPostIdsVotedNoShopByUser);
+                    mRecyclerView.setAdapter(mAdapter);
                     //}
                 } else {
                     //Query from server fail
