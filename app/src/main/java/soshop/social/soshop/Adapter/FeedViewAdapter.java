@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -35,8 +36,6 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
 
     //member variable of data set
     int numberOfPosts;
-    int[] mSoShopNumberSet;
-    int[] mNoShopNumberSet;
     List<ParseObject> mShopPosts;
     Context mContext;
 
@@ -44,24 +43,22 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
     ParseUser mCurrentUser;
     ParseRelation<ParseObject> mCurrentUserVoteSoShopRelation;
     ArrayList<ParseObject> mPostVotedSoShopByUser;
-    ArrayList<String> mPostIdsVotedSoShopByUser;
     ParseRelation<ParseObject> mCurrentUserVoteNoShopRelation;
     ArrayList<ParseObject> mPostVotedNoShopByUser;
-    ArrayList<String> mPostIdsVotedNoShopByUser;
 
     //MAIN CONSTRUCTOR
-    public FeedViewAdapter (List<ParseObject> soShopPosts, Context context, ArrayList<String> postIdsVotedSoShopByUser, ArrayList<String> postIdsVotedNoShopByUser){
+    public FeedViewAdapter (List<ParseObject> soShopPosts, Context context, ArrayList<ParseObject> postVotedSoShopByUser, ArrayList<ParseObject> postVotedNoShopByUser){
 
         mContext = context;
         mShopPosts = soShopPosts;
         numberOfPosts = mShopPosts.size();
 
-        mPostIdsVotedSoShopByUser = postIdsVotedSoShopByUser;
-        mPostIdsVotedNoShopByUser = postIdsVotedNoShopByUser;
+        mPostVotedSoShopByUser = postVotedSoShopByUser;
+        mPostVotedNoShopByUser = postVotedNoShopByUser;
 
         mCurrentUser = ParseUser.getCurrentUser();
-        mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_SOSHOP_VOTE_RELATION);
-        mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_NOSHOP_VOTE_RELATION);
+        mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_SOSHOP_VOTE);
+        mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_NOSHOP_VOTE);
 
     }
 
@@ -158,6 +155,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
 
         addDetailToView(viewHolder, i, shopPost);
 
+        //START: comment button for each post
         viewHolder.getCommentButton().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -165,13 +163,12 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
                 String soShopPostObjectId = shopPost.getObjectId();
                 Intent fullPostIntent = new Intent(mContext, FullPostActivity.class);
                 fullPostIntent.putExtra("soShopPostObjectId", soShopPostObjectId);
-                fullPostIntent.putExtra("PostIdsVotedSoShopByUser", mPostIdsVotedSoShopByUser);
-                fullPostIntent.putExtra("PostIdsVotedNoShopByUser",mPostIdsVotedNoShopByUser);
+                fullPostIntent.putExtra("PostIdsVotedSoShopByUser", mPostVotedSoShopByUser);
+                fullPostIntent.putExtra("PostIdsVotedNoShopByUser", mPostVotedNoShopByUser);
                 mContext.startActivity(fullPostIntent);
-
             }
         });
-
+        //END: comment button for each post
 
         //START: add image from Parse to imageView using tool from Picasso
         ParseFile file = shopPost.getParseFile(ParseConstants.KEY_IMAGE_I);// get the file in parse object
@@ -181,8 +178,12 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
 
         //START: disable vote if it is user's own post, and get status of voted button for each post relate to user
         if (shopPost.get(ParseConstants.KEY_SENDER_IDS).equals(ParseUser.getCurrentUser().getObjectId())) {
+
             viewHolder.getSoShopButton().setEnabled(false);
+            viewHolder.getSoShopButton().setText("SoShop");
+
             viewHolder.getNoShopButton().setEnabled(false);
+            viewHolder.getNoShopButton().setText("NoShop");
         } else {
 
             viewHolder.getSoShopButton().setEnabled(true);
@@ -200,9 +201,12 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
     private void initNoShopButtonStatus(final ViewHolder viewHolder, final ParseObject shopPost) {
         //START: SET ACTION and VIEW for NOSHOP BUTTON
 
-        if (mPostIdsVotedNoShopByUser.contains(shopPost.getObjectId())){
+        if (mPostVotedNoShopByUser.contains(shopPost)){
             viewHolder.getNoShopButton().setText("Voted!");
             viewHolder.getSoShopButton().setEnabled(false);
+        } else{
+            viewHolder.getNoShopButton().setText("NoShop");
+
         }
 
         viewHolder.getNoShopButton().setOnClickListener(new View.OnClickListener() {
@@ -217,14 +221,8 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
                 try {
                     //Check if user is already voted.
                     ArrayList<ParseUser> votedUsers = (ArrayList<ParseUser>) isVotedNoShopRelation.getQuery().find();
-                    ArrayList<String> votedUsersIds = new ArrayList<>(votedUsers.size()); //create ArrayList String to be used in queries below
-                    int subIndex = 0;
-                    for (ParseUser votedUser : votedUsers) { //get each friend id to the list
-                        votedUsersIds.add(subIndex, votedUser.getObjectId());
-                        subIndex++;
-                    }
 
-                    Boolean isContained = votedUsersIds.contains(mCurrentUser.getObjectId());
+                    Boolean isContained = votedUsers.contains(mCurrentUser);
 
                     if (isContained){
                         //if the user is already voted. remove the vote
@@ -241,12 +239,10 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
                             @Override
                             public void done(ParseException e) {
 
-
-
                                 if (e == null) {
 
                                     mCurrentUserVoteNoShopRelation.remove(shopPost);
-                                    mPostIdsVotedNoShopByUser.remove(shopPost.getObjectId()); //update the list to be used for rendering the button
+                                    mPostVotedNoShopByUser.remove(shopPost.getObjectId()); //update the list to be used for rendering the button
                                     mCurrentUser.saveInBackground(new SaveCallback() {
                                         @Override
                                         public void done(ParseException e) {
@@ -259,7 +255,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
                                     });
 
                                 } else {
-
+                                    //return button to before press.
                                 }
                             }
                         });
@@ -280,7 +276,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
 
                                 if (e == null) {
                                     mCurrentUserVoteNoShopRelation.add(shopPost);
-                                    mPostIdsVotedNoShopByUser.add(shopPost.getObjectId()); //update the list to be used for rendering the button
+                                    mPostVotedNoShopByUser.add(shopPost); //update the list to be used for rendering the button
                                     mCurrentUser.saveInBackground(new SaveCallback() {
                                         @Override
                                         public void done(ParseException e) {
@@ -301,6 +297,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
 
                 } catch (ParseException e) {
                     e.printStackTrace();
+                    Toast.makeText(mContext, "Error Getting List of Voted user for " + shopPost.get(ParseConstants.KEY_ITEM_NAME),Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -312,16 +309,19 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         //START: SET ACTION and VIEW for SOSHOP BUTTON
 
 
-        if (mPostIdsVotedSoShopByUser.contains(shopPost.getObjectId())){
+        if (mPostVotedSoShopByUser.contains(shopPost)){
             viewHolder.getSoShopButton().setText("Voted!");
             viewHolder.getNoShopButton().setEnabled(false);
+        } else{
+            viewHolder.getSoShopButton().setText("SoShop");
+
         }
 
         viewHolder.getSoShopButton().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                Boolean isContained;
+
 
                 ParseRelation<ParseUser> isVotedSoShopRelation = shopPost.getRelation(ParseConstants.KEY_IS_VOTE_SOSHOP_RELATION);
 
@@ -332,14 +332,8 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
                 try {
                     //Check if user is already voted.
                     ArrayList<ParseUser> votedUsers = (ArrayList<ParseUser>) isVotedSoShopRelation.getQuery().find();
-                    ArrayList<String> votedUsersIds = new ArrayList<>(votedUsers.size()); //create ArrayList String to be used in queries below
-                    int subIndex = 0;
-                    for (ParseUser votedUser : votedUsers) { //get each voted user id to the list
-                        votedUsersIds.add(subIndex, votedUser.getObjectId());
-                        subIndex++;
-                    }
 
-                        isContained = votedUsersIds.contains(mCurrentUser.getObjectId());
+                    Boolean isContained = votedUsers.contains(mCurrentUser);
 
                     if (isContained){
                         //if the user is already voted. remove the vote
@@ -360,7 +354,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
                                 if (e == null) {
 
                                     mCurrentUserVoteSoShopRelation.remove(shopPost);
-                                    mPostIdsVotedSoShopByUser.remove(shopPost.getObjectId()); //update the list to be used for rendering the button
+                                    mPostVotedSoShopByUser.remove(shopPost.getObjectId()); //update the list to be used for rendering the button
                                     mCurrentUser.saveInBackground(new SaveCallback() {
                                         @Override
                                         public void done(ParseException e) {
@@ -396,7 +390,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
 
                                 if (e == null) {
                                     mCurrentUserVoteSoShopRelation.add(shopPost);
-                                    mPostIdsVotedSoShopByUser.add(shopPost.getObjectId()); //update the list to be used for rendering the button
+                                    mPostVotedSoShopByUser.add(shopPost); //update the list to be used for rendering the button
                                     mCurrentUser.saveInBackground(new SaveCallback() {
                                         @Override
                                         public void done(ParseException e) {
@@ -417,6 +411,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
 
                 } catch (ParseException e) {
                     e.printStackTrace();
+                    Toast.makeText(mContext, "Error Getting List of Voted user for " + shopPost.get(ParseConstants.KEY_ITEM_NAME),Toast.LENGTH_SHORT).show();
                 }
 
             }

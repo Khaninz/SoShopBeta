@@ -5,7 +5,9 @@ package soshop.social.soshop.Utils;
  */
 public final class ParseConstants {
     //Class SoShopPst
+
     public static final String CLASS_SOSHOPPOST = "SoShopPost";
+    public static final String KEY_RELATION_POST_SENDER = "sender";
     public static final String KEY_RECIPIENT_IDS = "recipientIDs";
     public static final String KEY_SENDER_IDS = "senderID";
     public static final String KEY_SENDER_FIRST_NAME = "senderFirstName";
@@ -34,16 +36,16 @@ public final class ParseConstants {
     public static final String CLASS_USER = "User";
     public static final String KEY_OBJECT_ID = "objectId";
     public static final String KEY_USER_ID = "userId";
-    public static final String KEY_FRIENDS_RELATION = "friendsRelation"; //Relation KEY
-    public static final String KEY_SOSHOP_VOTE_RELATION = "voteSoShopByUser"; // post that user have vote Noshop
-    public static final String KEY_NOSHOP_VOTE_RELATION = "voteNoShopByUser"; // post that user have vote Noshop
+    public static final String KEY_RELATION_FRIENDS = "friendsRelation"; //Relation KEY
+    public static final String KEY_RELATION_SOSHOP_VOTE = "voteSoShopByUser"; // post that user have vote Noshop
+    public static final String KEY_RELATION_NOSHOP_VOTE = "voteNoShopByUser"; // post that user have vote Noshop
     public static final String KEY_FIRST_NAME = "firstName";
     public static final String KEY_LAST_NAME = "lastName";
 
     //CLASS COMMENT
     public static final String CLASS_COMMENT = "Comment";
     public static final String KEY_COMMENT_TEXT = "commentText";
-    public static final String KEY_RELATION_SENDER = "sender";
+    public static final String KEY_RELATION_COMMENT_SENDER = "sender";
     public static final String KEY_RELATION_TARGET_POST = "targetPost";
     public static final String KEY_SENDER_ID = "senderId";
 

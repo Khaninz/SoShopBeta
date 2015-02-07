@@ -96,8 +96,8 @@ public class FullPostActivity extends ActionBarActivity {
         mPostIdsVotedNoShopByUser = intent.getStringArrayListExtra("PostIdsVotedNoShopByUser");
 
         mCurrentUser = ParseUser.getCurrentUser();
-        mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_SOSHOP_VOTE_RELATION);
-        mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_NOSHOP_VOTE_RELATION);
+        mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_SOSHOP_VOTE);
+        mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_NOSHOP_VOTE);
         
         //getVoteStatusOfCurrentUser();
 
@@ -160,7 +160,7 @@ public class FullPostActivity extends ActionBarActivity {
                 commentItem.put(ParseConstants.KEY_COMMENT_TEXT, comment);
                 commentItem.put(ParseConstants.KEY_SENDER_ID, mCurrentUser.getObjectId());
 
-                ParseRelation<ParseUser> senderRelation = commentItem.getRelation(ParseConstants.KEY_RELATION_SENDER);
+                ParseRelation<ParseUser> senderRelation = commentItem.getRelation(ParseConstants.KEY_RELATION_COMMENT_SENDER);
                 senderRelation.add(mCurrentUser);
 
                 ParseRelation<ParseObject> targetPost = commentItem.getRelation(ParseConstants.KEY_RELATION_TARGET_POST);
@@ -504,8 +504,8 @@ public class FullPostActivity extends ActionBarActivity {
 
     private void getVoteStatusOfCurrentUser() {
         mCurrentUser = ParseUser.getCurrentUser();
-        mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_SOSHOP_VOTE_RELATION);
-        mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_NOSHOP_VOTE_RELATION);
+        mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_SOSHOP_VOTE);
+        mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_NOSHOP_VOTE);
         try {
             //get relation for SoShop to render and button status
             mPostVotedSoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteSoShopRelation.getQuery().find();

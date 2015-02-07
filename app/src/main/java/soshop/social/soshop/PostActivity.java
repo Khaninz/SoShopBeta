@@ -174,7 +174,7 @@ public class PostActivity extends ActionBarActivity {
         super.onResume();
 
         mCurrentUser = ParseUser.getCurrentUser();
-        mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_FRIENDS_RELATION);
+        mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_FRIENDS);
 
 //        if (mMediaUri != null) {
 //            mItemPicture1.setImageURI(mMediaUri);
@@ -270,63 +270,6 @@ public class PostActivity extends ActionBarActivity {
 
     private void createAndSendPost() {
 
-//        mFriendsRelation.getQuery().findInBackground(new FindCallback<ParseUser>() {
-//            @Override
-//            public void done(List<ParseUser> friends, ParseException e) {
-//                if (e == null) {
-//
-//                    String itemName = mItemName.getText().toString();
-//                    String itemPrice = mItemPrice.getText().toString();
-//                    int itemPriceInt = Integer.parseInt(itemPrice);
-//                    String currency = mCurrencySpinner.getSelectedItem().toString();
-//                    String caption = mCaption.getText().toString();
-//                    ArrayList recipientsIds = new ArrayList<String>();
-//
-//                    for (int i = 0; i < friends.size(); i++) {
-//
-//                        recipientsIds.add(friends.get(i).getObjectId());
-//
-//                    }
-//
-//                    //create Parse Object for post.
-//                    ParseObject soShopPost = new ParseObject(ParseConstants.CLASS_SOSHOPPOST);
-//                    ParseUser currentUser = ParseUser.getCurrentUser();
-//
-//                    soShopPost.put(ParseConstants.KEY_SENDER_IDS, currentUser.getObjectId()); //add sender Id
-//                    soShopPost.put(ParseConstants.KEY_ITEM_NAME, itemName);
-//                    soShopPost.put(ParseConstants.KEY_ITEM_PRICE, itemPriceInt);
-//                    soShopPost.put(ParseConstants.KEY_CURRENCY, currency);
-//                    soShopPost.put(ParseConstants.KEY_CAPTION, caption);
-//                    soShopPost.put(ParseConstants.KEY_RECIPIENT_IDS, recipientsIds);
-//                    soShopPost.put(ParseConstants.KEY_IMAGE_I, mFile);
-//                    soShopPost.put(ParseConstants.KEY_SENDER_FIRST_NAME, currentUser.get(ParseConstants.KEY_FIRST_NAME));
-//                    soShopPost.put(ParseConstants.KEY_SENDER_LAST_NAME, currentUser.get(ParseConstants.KEY_LAST_NAME));
-//
-//                    Boolean isPravate = null;
-//                    if (mIsPrivateSpinner.getSelectedItem().toString().equals("PRIVATE")){
-//                        isPravate = true;
-//                    } else {
-//                        isPravate = false;
-//                    }
-//
-//                    soShopPost.put(ParseConstants.KEY_IS_PRIVATE, isPravate);
-//
-//                    soShopPost.saveInBackground(new SaveCallback() {
-//                        @Override
-//                        public void done(ParseException e) {
-//                            Toast.makeText(getApplicationContext(), "Your Item have been post", Toast.LENGTH_LONG).show();
-//                        }
-//                    });
-//
-//
-//                }
-//
-//
-//            }
-//
-//        });
-
-        //Recipients Ids may not need.
         String itemName = mItemName.getText().toString();
         String itemPrice = mItemPrice.getText().toString();
         int itemPriceInt = Integer.parseInt(itemPrice);
@@ -337,6 +280,7 @@ public class PostActivity extends ActionBarActivity {
 
         //create Parse Object for post.
         ParseObject soShopPost = new ParseObject(ParseConstants.CLASS_SOSHOPPOST);
+        ParseRelation<ParseUser> soShopPostSender = soShopPost.getRelation(ParseConstants.KEY_RELATION_POST_SENDER);
         ParseUser currentUser = ParseUser.getCurrentUser();
 
         soShopPost.put(ParseConstants.KEY_SENDER_IDS, currentUser.getObjectId()); //add sender Id
@@ -348,6 +292,7 @@ public class PostActivity extends ActionBarActivity {
         soShopPost.put(ParseConstants.KEY_SENDER_FIRST_NAME, currentUser.get(ParseConstants.KEY_FIRST_NAME));
         soShopPost.put(ParseConstants.KEY_SENDER_LAST_NAME, currentUser.get(ParseConstants.KEY_LAST_NAME));
         soShopPost.put(ParseConstants.KEY_LOCATION_DESCRIPTION, locationDescription);
+        soShopPostSender.add(currentUser);
 
         Boolean isPravate = null;
         if (mIsPrivateSpinner.getSelectedItem().toString().equals("PRIVATE")) {

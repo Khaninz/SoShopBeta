@@ -63,7 +63,7 @@ public class InviteFriendsFragment extends android.support.v4.app.ListFragment {
 
 
         mCurrentUser = ParseUser.getCurrentUser();
-        mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_FRIENDS_RELATION);
+        mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_FRIENDS);
 
         //query all user except current user
         ParseQuery<ParseUser> allUserQuery = ParseQuery.getUserQuery();
@@ -130,7 +130,7 @@ public class InviteFriendsFragment extends android.support.v4.app.ListFragment {
         super.onListItemClick(l, v, position, id);
 
         mFriend = mUsers.get(position);
-        mRelationOfFriend = mFriend.getRelation(ParseConstants.KEY_FRIENDS_RELATION);
+        mRelationOfFriend = mFriend.getRelation(ParseConstants.KEY_RELATION_FRIENDS);
 
         if (getListView().isItemChecked(position)) {
             mFriendsRelation.add(mFriend);
