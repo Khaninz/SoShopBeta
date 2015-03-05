@@ -22,6 +22,18 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
 
     }
 
+
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+
+
+        View v =  LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.comment_item, viewGroup, false);
+
+        return new ViewHolder(v);
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder{
 
         private TextView mCommentTextView;
@@ -38,16 +50,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-
-
-        View v =  LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.comment_item, viewGroup, false);
-
-        return new ViewHolder(v);
-    }
-
-    @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
         holder.getCommentTextView().setText(mCommentList.get(position));
@@ -59,5 +61,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         return mCommentList.size();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return super.getItemViewType(position);
 
+
+
+    }
 }

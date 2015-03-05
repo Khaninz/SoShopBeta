@@ -34,6 +34,8 @@ import soshop.social.soshop.Utils.ParseConstants;
  */
 public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHolder> {
 
+    private static final  int MAX_FEED_SHOW = 15;
+
     //member variable of data set
     int numberOfPosts;
     List<ParseObject> mShopPosts;
@@ -160,11 +162,34 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
             @Override
             public void onClick(View v) {
 
+                String tempSoShopButtonText = (String) viewHolder.getSoShopButton().getText();
+                String tempNoShopButtonText = (String) viewHolder.getNoShopButton().getText();
+                Boolean tempSoShopButtonStatus;
+                Boolean tempNoShopButtonStatus;
+                if (shopPost.get(ParseConstants.KEY_SENDER_IDS).equals(ParseUser.getCurrentUser().getObjectId())) {
+                    tempNoShopButtonStatus = false;
+                    tempSoShopButtonStatus = false;
+                }else{
+                    if (mPostVotedSoShopByUser.contains(shopPost)) {
+                        //if soshop is voted, disable noShopButton
+                        tempNoShopButtonStatus = false;
+                    } else {
+                        tempNoShopButtonStatus = true;
+                    }
+                    if (mPostVotedNoShopByUser.contains(shopPost)) {
+                        tempSoShopButtonStatus = false;
+                    } else {
+                        tempSoShopButtonStatus = true;
+                    }
+                }
+
                 String soShopPostObjectId = shopPost.getObjectId();
                 Intent fullPostIntent = new Intent(mContext, FullPostActivity.class);
                 fullPostIntent.putExtra("soShopPostObjectId", soShopPostObjectId);
-                fullPostIntent.putExtra("PostIdsVotedSoShopByUser", mPostVotedSoShopByUser);
-                fullPostIntent.putExtra("PostIdsVotedNoShopByUser", mPostVotedNoShopByUser);
+                fullPostIntent.putExtra("SoShopButtonStatus", tempSoShopButtonStatus);
+                fullPostIntent.putExtra("SoShopButtonText",tempSoShopButtonText);
+                fullPostIntent.putExtra("NoShopButtonStatus", tempNoShopButtonStatus);
+                fullPostIntent.putExtra("NoShopButtonText",tempNoShopButtonText);
                 mContext.startActivity(fullPostIntent);
             }
         });
@@ -349,8 +374,6 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
                             @Override
                             public void done(ParseException e) {
 
-
-
                                 if (e == null) {
 
                                     mCurrentUserVoteSoShopRelation.remove(shopPost);
@@ -465,7 +488,13 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        return numberOfPosts;
+
+        if (numberOfPosts <= MAX_FEED_SHOW){
+            return numberOfPosts;
+        } else {
+            return MAX_FEED_SHOW;
+        }
+
     }
 
 

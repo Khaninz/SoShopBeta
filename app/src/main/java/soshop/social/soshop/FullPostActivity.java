@@ -92,61 +92,61 @@ public class FullPostActivity extends ActionBarActivity {
 
         Intent intent = getIntent();
         String soShopPostObjectId = intent.getStringExtra("soShopPostObjectId");
-        mPostIdsVotedSoShopByUser = intent.getStringArrayListExtra("PostIdsVotedSoShopByUser");
-        mPostIdsVotedNoShopByUser = intent.getStringArrayListExtra("PostIdsVotedNoShopByUser");
+        Boolean soShopButtonStatus = intent.getBooleanExtra("SoShopButtonStatus", true);
+        String soShopButtonText = intent.getStringExtra("SoShopButtonText");
+        Boolean noShopButtonStatus = intent.getBooleanExtra("NoShopButtonStatus", true);
+        String noShopButtonText = intent.getStringExtra("NoShopButtonText");
+
+        mSoShopButton.setEnabled(soShopButtonStatus);
+        mSoShopButton.setText(soShopButtonText);
+        mNoShopButton.setEnabled(noShopButtonStatus);
+        mNoShopButton.setText(noShopButtonText);
+
+//        fullPostIntent.putExtra("SoShopButtonStatus", tempSoShopButtonStatus);
+//        fullPostIntent.putExtra("SoShopButtonText",tempSoShopButtonText);
+//        fullPostIntent.putExtra("NoShopButtonStatus", tempNoShopButtonStatus);
+//        fullPostIntent.putExtra("NoShopButtonText",tempNoShopButtonText);
 
         mCurrentUser = ParseUser.getCurrentUser();
         mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_SOSHOP_VOTE);
         mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_NOSHOP_VOTE);
-        
+
         //getVoteStatusOfCurrentUser();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.commentRecyclerView);
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-
-
         final Context mContext = getBaseContext();
 
         ParseQuery query = ParseQuery.getQuery(ParseConstants.CLASS_SOSHOPPOST);
-        query.fromLocalDatastore();
+        //query.fromLocalDatastore();
         query.getInBackground(soShopPostObjectId, new GetCallback() {
             @Override
             public void done(ParseObject selectedPost, ParseException e) {
-                Toast.makeText(mContext, selectedPost.getObjectId(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(mContext, selectedPost.getObjectId(), Toast.LENGTH_LONG).show();
                 mSelectedPost = selectedPost;
                 addDetailToFullPost(selectedPost, mContext);
 
-                if (mSelectedPost.get(ParseConstants.KEY_SENDER_IDS).equals(ParseUser.getCurrentUser().getObjectId())) {
-                    mSoShopButton.setEnabled(false);
-                    mNoShopButton.setEnabled(false);
-                } else {
-
-                    mSoShopButton.setEnabled(true);
-                    mNoShopButton.setEnabled(true);
-                    initSoShopButtonStatus(mSelectedPost);
-                    initNoShopButtonStatus(mSelectedPost);
-
-                }
+                initSoShopButtonStatus(mSelectedPost);
+                initNoShopButtonStatus(mSelectedPost);
 
                 try {
                     loadCurrentComment();
                 } catch (ParseException exception) {
                     exception.printStackTrace();
+                    Toast.makeText(FullPostActivity.this, "There is an error loading comment", Toast.LENGTH_LONG).show();
                 }
-
 
             }
         });
-
 
         mSendCommentButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 String comment = mCommentInputEditText.getText().toString();
-                Toast.makeText(FullPostActivity.this,comment,Toast.LENGTH_LONG).show();
+                //Toast.makeText(FullPostActivity.this, comment, Toast.LENGTH_LONG).show();
                 mCommentList.add(comment);
 
                 mCommentAdapter = new CommentAdapter(mCommentList);
@@ -168,26 +168,56 @@ public class FullPostActivity extends ActionBarActivity {
 
                 ParseRelation<ParseObject> commentRelationOnPost = mSelectedPost.getRelation(ParseConstants.KEY_RELATION_COMMENT);
                 commentRelationOnPost.add(commentItem);
+// Idea to minimize request.
+//                commentItem.saveEventually();
+//                mSelectedPost.saveEventually();
+//                List<ParseObject> itemToSave = new ArrayList<ParseObject>();
+//                itemToSave.add(commentItem);
+//                itemToSave.add(mSelectedPost);
+//
+//                ParseObject.saveAllInBackground(itemToSave, new SaveCallback() {
+//                    @Override
+//                    public void done(ParseException e) {
+//                        Toast.makeText(FullPostActivity.this, "comment sent", Toast.LENGTH_SHORT).show();
+//                        try {
+//                            loadCurrentComment();
+//                        } catch (ParseException e1) {
+//                            e1.printStackTrace();
+//                        }
+//                    }
+//                });
 
-                commentItem.saveEventually();
-                mSelectedPost.saveEventually();
+                commentItem.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null){
+                            //save comment success
+                            mSelectedPost.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if (e == null ){
+                                      //save post success
+                                        try {
+                                            loadCurrentComment();
+                                        } catch (ParseException e1) {
+                                            e1.printStackTrace();
+                                        }
+                                        Toast.makeText(FullPostActivity.this, "Comment Sent", Toast.LENGTH_LONG).show();
 
+                                    } else {
+                                        //save post failed
+                                    }
+                                }
+                            });
+                        } else {
+                            //save comment failed
 
-
-
+                        }
+                    }
+                });
 
             }
         });
-
-
-
-        mCommentButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCommentInputEditText.setFocusableInTouchMode(true);
-            }
-        });
-
 
 
 
@@ -195,12 +225,14 @@ public class FullPostActivity extends ActionBarActivity {
 
     private void loadCurrentComment() throws ParseException {
 
+        mCommentList.clear();
         ParseRelation<ParseObject> currentComments = mSelectedPost.getRelation(ParseConstants.KEY_RELATION_COMMENT);
-        ArrayList<ParseObject> currentCommentsList = (ArrayList<ParseObject>) currentComments.getQuery().find();
-        int i = 0;
-        for (ParseObject currentComment : currentCommentsList){
-            mCommentList.add(currentComment.getString(ParseConstants.KEY_COMMENT_TEXT));
+        ArrayList<ParseObject> currentCommentsList = (ArrayList<ParseObject>) currentComments.getQuery().addAscendingOrder(ParseConstants.KEY_CREATED_AT).find();
 
+        //List<ParseObject> currentCommentsList = mSelectedPost.getList(ParseConstants.KEY_RELATION_COMMENT);
+        int i = 0;
+        for (ParseObject currentComment : currentCommentsList) {
+            mCommentList.add(currentComment.getString(ParseConstants.KEY_COMMENT_TEXT));
             i++;
         }
 
@@ -214,10 +246,12 @@ public class FullPostActivity extends ActionBarActivity {
     private void initNoShopButtonStatus(final ParseObject shopPost) {
         //START: SET ACTION and VIEW for NOSHOP BUTTON
 
-        if (mPostIdsVotedNoShopByUser.contains(shopPost.getObjectId())){
-            mNoShopButton.setText("Voted!");
-            mSoShopButton.setEnabled(false);
-        }
+//        if (mPostVotedNoShopByUser.contains(shopPost)){
+//            mNoShopButton.setText("Voted!");
+//            mSoShopButton.setEnabled(false);
+//        } else{
+//            mNoShopButton.setText("NoShop");
+//        }
 
         mNoShopButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -231,14 +265,9 @@ public class FullPostActivity extends ActionBarActivity {
                 try {
                     //Check if user is already voted.
                     ArrayList<ParseUser> votedUsers = (ArrayList<ParseUser>) isVotedNoShopRelation.getQuery().find();
-                    ArrayList<String> votedUsersIds = new ArrayList<>(votedUsers.size()); //create ArrayList String to be used in queries below
-                    int subIndex = 0;
-                    for (ParseUser votedUser : votedUsers) { //get each friend id to the list
-                        votedUsersIds.add(subIndex, votedUser.getObjectId());
-                        subIndex++;
-                    }
 
-                    Boolean isContained = votedUsersIds.contains(mCurrentUser.getObjectId());
+
+                    Boolean isContained = votedUsers.contains(mCurrentUser);
 
                     if (isContained) {
                         //if the user is already voted. remove the vote
@@ -251,6 +280,7 @@ public class FullPostActivity extends ActionBarActivity {
                         shopPost.increment(ParseConstants.KEY_TOTAL_NOSHOP, -1);
                         isVotedNoShopRelation.remove(mCurrentUser);
 
+                        shopPost.saveEventually();
                         shopPost.saveInBackground(new SaveCallback() {
                             @Override
                             public void done(ParseException e) {
@@ -286,6 +316,7 @@ public class FullPostActivity extends ActionBarActivity {
                         isVotedNoShopRelation.add(mCurrentUser);
                         mNoShopButton.setText("Voted!");
 
+                        shopPost.saveEventually();
                         shopPost.saveInBackground(new SaveCallback() {
                             @Override
                             public void done(ParseException e) {
@@ -323,16 +354,16 @@ public class FullPostActivity extends ActionBarActivity {
         //START: SET ACTION and VIEW for SOSHOP BUTTON
 
 
-        if (mPostIdsVotedSoShopByUser.contains(shopPost.getObjectId())){
-            mSoShopButton.setText("Voted!");
-            mNoShopButton.setEnabled(false);
-        }
+//        if (mPostVotedSoShopByUser.contains(shopPost)){
+//            mSoShopButton.setText("Voted!");
+//            mNoShopButton.setEnabled(false);
+//        } else {
+//            mSoShopButton.setText("SoShop");
+//        }
 
         mSoShopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Boolean isContained;
 
                 ParseRelation<ParseUser> isVotedSoShopRelation = shopPost.getRelation(ParseConstants.KEY_IS_VOTE_SOSHOP_RELATION);
 
@@ -343,14 +374,8 @@ public class FullPostActivity extends ActionBarActivity {
                 try {
                     //Check if user is already voted.
                     ArrayList<ParseUser> votedUsers = (ArrayList<ParseUser>) isVotedSoShopRelation.getQuery().find();
-                    ArrayList<String> votedUsersIds = new ArrayList<>(votedUsers.size()); //create ArrayList String to be used in queries below
-                    int subIndex = 0;
-                    for (ParseUser votedUser : votedUsers) { //get each voted user id to the list
-                        votedUsersIds.add(subIndex, votedUser.getObjectId());
-                        subIndex++;
-                    }
 
-                    isContained = votedUsersIds.contains(mCurrentUser.getObjectId());
+                    Boolean isContained = votedUsers.contains(mCurrentUser);
 
                     if (isContained) {
                         //if the user is already voted. remove the vote
@@ -362,6 +387,7 @@ public class FullPostActivity extends ActionBarActivity {
                         shopPost.increment(ParseConstants.KEY_TOTAL_SOSHOP, -1);
                         isVotedSoShopRelation.remove(mCurrentUser);
 
+                        shopPost.saveEventually();
                         shopPost.saveInBackground(new SaveCallback() {
                             @Override
                             public void done(ParseException e) {
@@ -397,6 +423,7 @@ public class FullPostActivity extends ActionBarActivity {
                         isVotedSoShopRelation.add(mCurrentUser);
                         mSoShopButton.setText("Voted!");
 
+                        shopPost.saveEventually();
                         shopPost.saveInBackground(new SaveCallback() {
                             @Override
                             public void done(ParseException e) {
@@ -446,14 +473,14 @@ public class FullPostActivity extends ActionBarActivity {
         mItemName.setText(itemName);
         //item price with currency
         int itemPriceInt = (int) selectedPost.get(ParseConstants.KEY_ITEM_PRICE);
-        String itemPrice = itemPriceInt +"";
+        String itemPrice = itemPriceInt + "";
         String currency = (String) selectedPost.get(ParseConstants.KEY_CURRENCY);
         mItemPrice.setText(currency + " " + itemPrice);
 
         //item location description
         String itemLocation = (String) selectedPost.get(ParseConstants.KEY_LOCATION_DESCRIPTION);
-        if (itemLocation == null ){
-           mItemOptionalLocation.setVisibility(View.INVISIBLE);
+        if (itemLocation == null) {
+            mItemOptionalLocation.setVisibility(View.INVISIBLE);
         } else {
             mItemOptionalLocation.setText(itemLocation);
             mItemOptionalLocation.setVisibility(View.VISIBLE);
@@ -502,35 +529,5 @@ public class FullPostActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void getVoteStatusOfCurrentUser() {
-        mCurrentUser = ParseUser.getCurrentUser();
-        mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_SOSHOP_VOTE);
-        mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_NOSHOP_VOTE);
-        try {
-            //get relation for SoShop to render and button status
-            mPostVotedSoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteSoShopRelation.getQuery().find();
-            mPostIdsVotedSoShopByUser = new ArrayList<>(mPostVotedSoShopByUser.size());
-            if (mPostVotedSoShopByUser != null){
-                int index = 0;
-                for(ParseObject votedSoShop: mPostVotedSoShopByUser){
-                    mPostIdsVotedSoShopByUser.add(index, votedSoShop.getObjectId());
-                    index++;
-                }
-            }
-            //get relation for NoShop to render and init button status
-            mPostVotedNoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteNoShopRelation.getQuery().find();
-            mPostIdsVotedNoShopByUser = new ArrayList<>(mPostVotedNoShopByUser.size());
-            if (mPostVotedNoShopByUser != null){
-                int index = 0;
-                for(ParseObject votedNoShop: mPostVotedNoShopByUser){
-                    mPostIdsVotedNoShopByUser.add(index, votedNoShop.getObjectId());
-                    index++;
-                }
-            }
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-    }
 
 }

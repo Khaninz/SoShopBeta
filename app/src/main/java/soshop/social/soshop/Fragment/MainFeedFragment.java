@@ -4,6 +4,7 @@ package soshop.social.soshop.Fragment;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import soshop.social.soshop.Adapter.FeedViewAdapter;
-import soshop.social.soshop.LoginActivity;
 import soshop.social.soshop.PostActivity;
 import soshop.social.soshop.R;
 import soshop.social.soshop.Utils.ParseConstants;
@@ -99,17 +99,13 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Toast.makeText(getActivity(), "We are refreshing!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "We are refreshing!", Toast.LENGTH_SHORT).show();
                 try {
 
                     ParseObject.unpinAll();
                     getVoteStatusOfCurrentUser();
-                    retrieveFeedFromServerAndPinOnly();
-                    retrieveFeedFromLocalAndStartViewAdapter();
-
-
-                    //temp test
-                    //estQueryWithRelation();
+                    refreshFeedViewFromServerPinAndDisplay();
+                    Toast.makeText(getActivity(), "Refresh Done!", Toast.LENGTH_SHORT).show();
 
                 } catch (ParseException e) {
                     e.printStackTrace();
@@ -124,12 +120,26 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
         //END: Recycler View
 
-        getVoteStatusOfCurrentUser();
+
+        return rootView;
+
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
 
         //START guery and save objects from server
         mProgressBar.setVisibility(View.VISIBLE);
         try {
-            retrieveFeedFromServerAndPinOnly();
+            retrieveFeedFromServerAndPinOnly(); //2 request
         } catch (ParseException e) {
             e.printStackTrace();
             Toast.makeText(getActivity(), "Load from server fail, please try again", Toast.LENGTH_LONG).show();
@@ -137,18 +147,13 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         }
         //END: guery and save objects from server
 
-        return rootView;
-
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        getVoteStatusOfCurrentUser();
-
-        mCurrentUser = ParseUser.getCurrentUser();
-        if (mCurrentUser != null) {
+        getVoteStatusOfCurrentUser(); //2 request
 
             try {
 
@@ -161,73 +166,6 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
 
             }
 
-        } else {
-
-            Intent intent = new Intent(getActivity(), LoginActivity.class);
-            //add flag to intent, so user can't use 'back' to the main activity
-            //read more about Flag in the api intent api document
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-        }
-
-        //testQueryWithRelation();
-
-    }
-
-    private void testQueryWithRelation() {
-
-        mCurrentUser = ParseUser.getCurrentUser();
-        mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_FRIENDS);
-
-        List<ParseObject> tempUserPostList;
-        List<ParseObject> tempUserFriendsPostList;
-
-        ParseQuery<ParseObject> userPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
-        //userPostQuery.whereEqualTo(ParseConstants.KEY_SENDER_IDS, mCurrentUser.getObjectId());
-        userPostQuery.whereEqualTo(ParseConstants.KEY_RELATION_POST_SENDER, mCurrentUser);
-        userPostQuery.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> parseObjects, ParseException e) {
-                Toast.makeText(getActivity(), "User Post: "+parseObjects.size()+"",Toast.LENGTH_LONG).show();
-
-            }
-        });
-
-
-        try {
-            ArrayList<ParseUser> friends = (ArrayList<ParseUser>) mFriendsRelation.getQuery().find();
-
-            ParseQuery<ParseObject> userFriendsPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
-            userFriendsPostQuery.whereContainedIn(ParseConstants.KEY_RELATION_POST_SENDER, friends);
-            userFriendsPostQuery.findInBackground(new FindCallback<ParseObject>() {
-                @Override
-                public void done(List<ParseObject> parseObjects, ParseException e) {
-                    Toast.makeText(getActivity(), "Friend Post: "+parseObjects.size()+"",Toast.LENGTH_LONG).show();
-                }
-            });
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-//        ParseQuery<ParseUser> queryCurrentUser = ParseQuery.getQuery(ParseConstants.CLASS_USER);
-//        queryCurrentUser.include(ParseConstants.KEY_RELATION_FRIENDS);
-//        queryCurrentUser.include(ParseConstants.KEY_RELATION_SOSHOP_VOTE);
-//        queryCurrentUser.include(ParseConstants.KEY_RELATION_NOSHOP_VOTE);
-//
-//        queryCurrentUser.getInBackground(mCurrentUser.getObjectId(), new GetCallback<ParseUser>() {
-//            @Override
-//            public void done(ParseUser user, ParseException e) {
-//                if (e==null){
-//                List<ParseUser> userFriendsList = user.getList(ParseConstants.KEY_RELATION_FRIENDS);
-//                Toast.makeText(getActivity(),userFriendsList.size()+"",Toast.LENGTH_LONG).show();
-//            }else{
-//                    Toast.makeText(getActivity(),"error get friend list for" + mCurrentUser.getUsername() + ", id: " + mCurrentUser.getObjectId(),Toast.LENGTH_LONG).show();
-//                }
-//
-//            }
-//        });
 
     }
 
@@ -263,13 +201,11 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
 
                     mProgressBar.setVisibility(View.INVISIBLE);
 
-                    if (mAdapter == null) {
-                        mAdapter = new FeedViewAdapter(soShopPostObjects, getActivity(), mPostVotedSoShopByUser, mPostVotedNoShopByUser);
-                        mRecyclerView.setAdapter(mAdapter);
-                    }
-                } else {
+                    mAdapter = new FeedViewAdapter(soShopPostObjects, getActivity(), mPostVotedSoShopByUser, mPostVotedNoShopByUser);
+                    mRecyclerView.setAdapter(mAdapter);
 
-                }
+                    }
+
             }
         });
 
@@ -277,13 +213,12 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
 
     private void retrieveFeedFromServerAndPinOnly() throws ParseException {
 
-        if (mSoShopPostObjects != null) { //if not empty clear it the list of objects first.
+        if (mSoShopPostObjects != null) { //if not empty clear it the list of objects first. to releast previous list and store a new one
             mSoShopPostObjects.clear();
         }
 
         ParseQuery<ParseObject> mainFeedQuery = createMainFeedQuery();
-
-        mainFeedQuery.findInBackground(new FindCallback<ParseObject>() {
+        mainFeedQuery.findInBackground(new FindCallback<ParseObject>() { //1 request
             @Override
             public void done(List<ParseObject> soShopPostObjects, ParseException e) {
 
@@ -299,17 +234,51 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
                         mSwipeRefreshLayout.setRefreshing(false);
                     }
 
-//                    if (mAdapter == null) {
-//                    mAdapter = new FeedViewAdapter(mSoShopPostObjects, getActivity(), mPostIdsVotedSoShopByUser, mPostIdsVotedNoShopByUser);
-//                    mRecyclerView.setAdapter(mAdapter);
-//                    }
-                } else {
+                    } else {
                     //Query from server fail
+
 
                 }
             }
         });
 
+    }
+
+    private void refreshFeedViewFromServerPinAndDisplay() throws ParseException {
+
+        if (mSoShopPostObjects != null) { //if not empty clear it the list of objects first. to releast previous list and store a new one
+            mSoShopPostObjects.clear();
+        }
+
+        ParseQuery<ParseObject> mainFeedQuery = createMainFeedQuery();
+        mainFeedQuery.findInBackground(new FindCallback<ParseObject>() { //1 request
+            @Override
+            public void done(List<ParseObject> soShopPostObjects, ParseException e) {
+
+                if (e == null) {
+                    //Query from server success
+                    mSoShopPostObjects = soShopPostObjects;
+                    //pin all object in list to be used for local query
+                    ParseObject.pinAllInBackground(mSoShopPostObjects);
+
+                    mProgressBar.setVisibility(View.INVISIBLE);
+
+                    if (mSwipeRefreshLayout.isRefreshing()) {
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+
+
+                        mAdapter = new FeedViewAdapter(soShopPostObjects, getActivity(), mPostVotedSoShopByUser, mPostVotedNoShopByUser);
+                        mRecyclerView.setAdapter(mAdapter);
+
+
+                } else {
+                    //Query from server fail
+
+
+                }
+            }
+        });
 
     }
 
@@ -318,7 +287,7 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         mCurrentUser = ParseUser.getCurrentUser();
         mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_FRIENDS);
 
-        ArrayList<ParseUser> friends = (ArrayList<ParseUser>) mFriendsRelation.getQuery().find(); //program auto add throws for getQuery.find
+        ArrayList<ParseUser> friends = (ArrayList<ParseUser>) mFriendsRelation.getQuery().find(); //program auto add throws for getQuery.find //1 request
         ArrayList<String> friendsIds = new ArrayList<>(friends.size()); //create ArrayList String to be used in queries below
         int i = 0;
         for (ParseUser friend : friends) { //get each friend id to the list
