@@ -4,7 +4,6 @@ package soshop.social.soshop.Fragment;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -51,24 +50,36 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
     protected SwipeRefreshLayout mSwipeRefreshLayout;
     private ParseRelation<ParseObject> mCurrentUserVoteSoShopRelation;
     private ParseRelation<ParseObject> mCurrentUserVoteNoShopRelation;
-    private ArrayList<ParseObject> mPostVotedSoShopByUser;
+    private List<ParseObject> mPostVotedSoShopByUser;
     private ArrayList<String> mPostIdsVotedSoShopByUser;
-    private ArrayList<ParseObject> mPostVotedNoShopByUser;
+    private List<ParseObject> mPostVotedNoShopByUser;
     private ArrayList<String> mPostIdsVotedNoShopByUser;
 
 
     public MainFeedFragment() {
-        // Required empty public constructor
-//        ParseQuery<ParseUser> queryCurrentUser = ParseQuery.getQuery(ParseConstants.CLASS_USER);
-//        queryCurrentUser.include(ParseConstants.KEY_RELATION_FRIENDS);
-//        queryCurrentUser.include(ParseConstants.KEY_RELATION_SOSHOP_VOTE);
-//        queryCurrentUser.include(ParseConstants.KEY_RELATION_NOSHOP_VOTE);
 
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mCurrentUser = ParseUser.getCurrentUser();
+        //START guery and save objects from server
+
+        if (mCurrentUser != null) {
+
+            try {
+                retrieveFeedFromServerAndPinOnly(); //2 request
+            } catch (ParseException e) {
+                e.printStackTrace();
+                Toast.makeText(getActivity(), "Load from server fail, please try again", Toast.LENGTH_LONG).show();
+                ;
+            }
+        } else {
+
+        }
+        //END: guery and save objects from server
 
     }
 
@@ -125,35 +136,14 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
 
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        //START guery and save objects from server
-        mProgressBar.setVisibility(View.VISIBLE);
-        try {
-            retrieveFeedFromServerAndPinOnly(); //2 request
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Toast.makeText(getActivity(), "Load from server fail, please try again", Toast.LENGTH_LONG).show();
-            ;
-        }
-        //END: guery and save objects from server
-
-    }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        getVoteStatusOfCurrentUser(); //2 request
+        if(mCurrentUser != null) {
+
+            getVoteStatusOfCurrentUser(); //2 request
 
             try {
 
@@ -165,29 +155,52 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
                 ;
 
             }
+        } else {
 
+        }
 
     }
 
     private void getVoteStatusOfCurrentUser() {
-        mCurrentUser = ParseUser.getCurrentUser();
 
         mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_SOSHOP_VOTE);
         mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_NOSHOP_VOTE);
-        try {
-            //get relation for SoShop to render and button status
-            mPostVotedSoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteSoShopRelation.getQuery().find();
 
-            //get relation for NoShop to render and init button status
-            mPostVotedNoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteNoShopRelation.getQuery().find();
+        mCurrentUserVoteSoShopRelation.getQuery().findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> parseObjects, ParseException e) {
+                if (e == null){
+                    mPostVotedSoShopByUser = parseObjects;
+                }
+            }
+        });
 
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Toast.makeText(getActivity(),"Error getting vote status of User",Toast.LENGTH_LONG).show();
-        }
+        mCurrentUserVoteNoShopRelation.getQuery().findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> parseObjects, ParseException e) {
+                if (e==null){
+                    mPostVotedNoShopByUser = parseObjects;
+                }
+            }
+        });
+
+
+//        try {
+//            //get relation for SoShop to render and button status
+//            mPostVotedSoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteSoShopRelation.getQuery().find();
+//
+//            //get relation for NoShop to render and init button status
+//            mPostVotedNoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteNoShopRelation.getQuery().find();
+//
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//            Toast.makeText(getActivity(),"Error getting vote status of User",Toast.LENGTH_LONG).show();
+//        }
     }
 
     private void retrieveFeedFromLocalAndStartViewAdapter() throws ParseException {
+
+        mProgressBar.setVisibility(View.VISIBLE);
 
         ParseQuery<ParseObject> mainFeedQuery = createMainFeedQuery();
 
@@ -228,15 +241,12 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
                     //pin all object in list to be used for local query
                     ParseObject.pinAllInBackground(mSoShopPostObjects);
 
-                    mProgressBar.setVisibility(View.INVISIBLE);
-
                     if (mSwipeRefreshLayout.isRefreshing()) {
                         mSwipeRefreshLayout.setRefreshing(false);
                     }
 
                     } else {
                     //Query from server fail
-
 
                 }
             }
@@ -246,7 +256,7 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
 
     private void refreshFeedViewFromServerPinAndDisplay() throws ParseException {
 
-        if (mSoShopPostObjects != null) { //if not empty clear it the list of objects first. to releast previous list and store a new one
+        if (mSoShopPostObjects != null) { //if not empty clear it the list of objects first. to release previous list and store a new one
             mSoShopPostObjects.clear();
         }
 
@@ -261,20 +271,15 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
                     //pin all object in list to be used for local query
                     ParseObject.pinAllInBackground(mSoShopPostObjects);
 
-                    mProgressBar.setVisibility(View.INVISIBLE);
-
                     if (mSwipeRefreshLayout.isRefreshing()) {
                         mSwipeRefreshLayout.setRefreshing(false);
                     }
 
-
                         mAdapter = new FeedViewAdapter(soShopPostObjects, getActivity(), mPostVotedSoShopByUser, mPostVotedNoShopByUser);
                         mRecyclerView.setAdapter(mAdapter);
 
-
                 } else {
                     //Query from server fail
-
 
                 }
             }
@@ -284,7 +289,6 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
 
     private ParseQuery<ParseObject> createMainFeedQuery() throws ParseException {
 
-        mCurrentUser = ParseUser.getCurrentUser();
         mFriendsRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_FRIENDS);
 
         ArrayList<ParseUser> friends = (ArrayList<ParseUser>) mFriendsRelation.getQuery().find(); //program auto add throws for getQuery.find //1 request
@@ -318,6 +322,10 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         // arrange to newest post at the top
         mainFeedQuery.addDescendingOrder(ParseConstants.KEY_CREATED_AT);
         return mainFeedQuery;
+
+
+
+
     }
 
 }

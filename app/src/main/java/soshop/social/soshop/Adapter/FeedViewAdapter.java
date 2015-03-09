@@ -44,12 +44,12 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
     //member for Parse
     ParseUser mCurrentUser;
     ParseRelation<ParseObject> mCurrentUserVoteSoShopRelation;
-    ArrayList<ParseObject> mPostVotedSoShopByUser;
+    List<ParseObject> mPostVotedSoShopByUser;
     ParseRelation<ParseObject> mCurrentUserVoteNoShopRelation;
-    ArrayList<ParseObject> mPostVotedNoShopByUser;
+    List<ParseObject> mPostVotedNoShopByUser;
 
     //MAIN CONSTRUCTOR
-    public FeedViewAdapter (List<ParseObject> soShopPosts, Context context, ArrayList<ParseObject> postVotedSoShopByUser, ArrayList<ParseObject> postVotedNoShopByUser){
+    public FeedViewAdapter (List<ParseObject> soShopPosts, Context context, List<ParseObject> postVotedSoShopByUser, List<ParseObject> postVotedNoShopByUser){
 
         mContext = context;
         mShopPosts = soShopPosts;

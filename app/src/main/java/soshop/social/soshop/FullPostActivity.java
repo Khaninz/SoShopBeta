@@ -89,7 +89,6 @@ public class FullPostActivity extends ActionBarActivity {
         mSendCommentButton = (Button) findViewById(R.id.sendCommentButton);
         mCommentInputEditText = (EditText) findViewById(R.id.commentInputEditText);
 
-
         Intent intent = getIntent();
         String soShopPostObjectId = intent.getStringExtra("soShopPostObjectId");
         Boolean soShopButtonStatus = intent.getBooleanExtra("SoShopButtonStatus", true);
@@ -102,16 +101,9 @@ public class FullPostActivity extends ActionBarActivity {
         mNoShopButton.setEnabled(noShopButtonStatus);
         mNoShopButton.setText(noShopButtonText);
 
-//        fullPostIntent.putExtra("SoShopButtonStatus", tempSoShopButtonStatus);
-//        fullPostIntent.putExtra("SoShopButtonText",tempSoShopButtonText);
-//        fullPostIntent.putExtra("NoShopButtonStatus", tempNoShopButtonStatus);
-//        fullPostIntent.putExtra("NoShopButtonText",tempNoShopButtonText);
-
         mCurrentUser = ParseUser.getCurrentUser();
         mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_SOSHOP_VOTE);
         mCurrentUserVoteNoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_NOSHOP_VOTE);
-
-        //getVoteStatusOfCurrentUser();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.commentRecyclerView);
         mLayoutManager = new LinearLayoutManager(this);
@@ -168,7 +160,8 @@ public class FullPostActivity extends ActionBarActivity {
 
                 ParseRelation<ParseObject> commentRelationOnPost = mSelectedPost.getRelation(ParseConstants.KEY_RELATION_COMMENT);
                 commentRelationOnPost.add(commentItem);
-// Idea to minimize request.
+
+// IDEA TO MINIMIZE REQUEST
 //                commentItem.saveEventually();
 //                mSelectedPost.saveEventually();
 //                List<ParseObject> itemToSave = new ArrayList<ParseObject>();
@@ -244,14 +237,6 @@ public class FullPostActivity extends ActionBarActivity {
     }
 
     private void initNoShopButtonStatus(final ParseObject shopPost) {
-        //START: SET ACTION and VIEW for NOSHOP BUTTON
-
-//        if (mPostVotedNoShopByUser.contains(shopPost)){
-//            mNoShopButton.setText("Voted!");
-//            mSoShopButton.setEnabled(false);
-//        } else{
-//            mNoShopButton.setText("NoShop");
-//        }
 
         mNoShopButton.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -44,15 +44,6 @@ public class MainActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
-
-        // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
-
         //START: Log for facebook key hash
         try {
             PackageInfo info = getPackageManager().getPackageInfo(
@@ -66,37 +57,29 @@ public class MainActivity extends ActionBarActivity
         } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException ignored) {
 
         }
-
         //END: Log for facebook key hash
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //CHECK IF THERE IS CURRENT USER LOGIN IN.
+        //START: CHECK IF THERE IS CURRENT USER LOGIN IN.
         ParseUser currentUser = ParseUser.getCurrentUser();
         if (currentUser == null) {
 
             navigateToLogin();
 
         } else {
-
             Log.i(TAG, currentUser.getUsername());
         }
+        //END: CHECK IF THERE IS CURRENT USER LOGIN IN.
+
+        mNavigationDrawerFragment = (NavigationDrawerFragment)
+                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+        mTitle = getTitle();
+
+        // Set up the drawer.
+        mNavigationDrawerFragment.setUp(
+                R.id.navigation_drawer,
+                (DrawerLayout) findViewById(R.id.drawer_layout));
+
     }
-//    //Facebook Track but got error maybe need to put in fragment
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//
-//        // Logs 'install' and 'app activate' App Events.
-//        AppEventsLogger.activateApp(this);
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//
-//        // Logs 'app deactivate' App Event.
-//        AppEventsLogger.deactivateApp(this);
-//    }
 
     private void navigateToLogin() {
         Intent intent = new Intent(this, LoginActivity.class);
