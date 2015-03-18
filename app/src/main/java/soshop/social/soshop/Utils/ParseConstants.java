@@ -9,7 +9,7 @@ public final class ParseConstants {
     public static final String CLASS_SOSHOPPOST = "SoShopPost";
     public static final String KEY_RELATION_POST_SENDER = "sender";
     public static final String KEY_RECIPIENT_IDS = "recipientIDs";
-    public static final String KEY_SENDER_IDS = "senderID";
+    public static final String KEY_POST_SENDER_ID = "senderID";
     public static final String KEY_SENDER_FIRST_NAME = "senderFirstName";
     public static final String KEY_SENDER_LAST_NAME = "senderLastName";
     public static final String KEY_CREATED_AT = "createdAt";
@@ -48,5 +48,6 @@ public final class ParseConstants {
     public static final String KEY_RELATION_COMMENT_SENDER = "sender";
     public static final String KEY_RELATION_TARGET_POST = "targetPost";
     public static final String KEY_SENDER_ID = "senderId";
+
 
 }

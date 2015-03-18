@@ -6,19 +6,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import com.parse.ParseObject;
+
+import java.util.List;
 
 import soshop.social.soshop.R;
+import soshop.social.soshop.Utils.ParseConstants;
 
 /**
  * Created by Ninniez on 2/3/2015.
  */
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHolder>{
 
-    private ArrayList<String> mCommentList;
+    private List<ParseObject> mCommentObjects;
 
-    public CommentAdapter(ArrayList<String> commentList){
-        mCommentList = commentList;
+    public CommentAdapter(List<ParseObject> commentObjects){
+        mCommentObjects = commentObjects;
 
     }
 
@@ -52,13 +55,15 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        holder.getCommentTextView().setText(mCommentList.get(position));
+        ParseObject commentObject = mCommentObjects.get(position);
+
+        holder.getCommentTextView().setText(commentObject.getString(ParseConstants.KEY_COMMENT_TEXT));
 
     }
 
     @Override
     public int getItemCount() {
-        return mCommentList.size();
+        return mCommentObjects.size();
     }
 
     @Override

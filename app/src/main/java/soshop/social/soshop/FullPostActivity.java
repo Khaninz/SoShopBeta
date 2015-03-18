@@ -8,6 +8,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -52,7 +53,7 @@ public class FullPostActivity extends ActionBarActivity {
 
     private Button mSendCommentButton;
     private EditText mCommentInputEditText;
-    private ArrayList<String> mCommentList = new ArrayList<>();
+    private ArrayList<ParseObject> mCommentList = new ArrayList<>();
     private CommentAdapter mCommentAdapter;
 
     private ParseObject mSelectedPost;
@@ -111,25 +112,30 @@ public class FullPostActivity extends ActionBarActivity {
 
         final Context mContext = getBaseContext();
 
-        ParseQuery query = ParseQuery.getQuery(ParseConstants.CLASS_SOSHOPPOST);
-        //query.fromLocalDatastore();
-        query.getInBackground(soShopPostObjectId, new GetCallback() {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseConstants.CLASS_SOSHOPPOST);
+        //query.include(ParseConstants.KEY_RELATION_COMMENT);
+
+        query.getInBackground(soShopPostObjectId, new GetCallback<ParseObject>() {
             @Override
-            public void done(ParseObject selectedPost, ParseException e) {
+            public void done(ParseObject parseObject, ParseException e) {
                 //Toast.makeText(mContext, selectedPost.getObjectId(), Toast.LENGTH_LONG).show();
-                mSelectedPost = selectedPost;
-                addDetailToFullPost(selectedPost, mContext);
+                if (e ==null) {
+                    mSelectedPost = parseObject;
+                    addDetailToFullPost(mSelectedPost, mContext);
 
-                initSoShopButtonStatus(mSelectedPost);
-                initNoShopButtonStatus(mSelectedPost);
+                    initSoShopButtonStatus(mSelectedPost);
+                    initNoShopButtonStatus(mSelectedPost);
 
-                try {
-                    loadCurrentComment();
-                } catch (ParseException exception) {
-                    exception.printStackTrace();
-                    Toast.makeText(FullPostActivity.this, "There is an error loading comment", Toast.LENGTH_LONG).show();
+                    try {
+                        loadCurrentComment();
+                    } catch (ParseException exception) {
+                        exception.printStackTrace();
+                        Toast.makeText(FullPostActivity.this, "There is an error loading comment", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(FullPostActivity.this, "There is an error loading post, please try again", Toast.LENGTH_LONG).show();
+                    Log.i("FullPostActivity", e.toString());
                 }
-
             }
         });
 
@@ -137,29 +143,67 @@ public class FullPostActivity extends ActionBarActivity {
 
             @Override
             public void onClick(View v) {
+
                 String comment = mCommentInputEditText.getText().toString();
-                //Toast.makeText(FullPostActivity.this, comment, Toast.LENGTH_LONG).show();
-                mCommentList.add(comment);
+                if (!comment.isEmpty()) {
 
-                mCommentAdapter = new CommentAdapter(mCommentList);
-                mCommentInputEditText.setText("");
-                mRecyclerView.setAdapter(mCommentAdapter);
+                    //Toast.makeText(FullPostActivity.this, comment, Toast.LENGTH_LONG).show();
 
-                //create new class for comment
-                //set target post and sender id
-                // save
-                ParseObject commentItem = new ParseObject(ParseConstants.CLASS_COMMENT);
-                commentItem.put(ParseConstants.KEY_COMMENT_TEXT, comment);
-                commentItem.put(ParseConstants.KEY_SENDER_ID, mCurrentUser.getObjectId());
+                    //create new class for comment
+                    //set target post and sender id
+                    // save
+                    ParseObject commentItem = new ParseObject(ParseConstants.CLASS_COMMENT);
+                    commentItem.put(ParseConstants.KEY_COMMENT_TEXT, comment);
+                    commentItem.put(ParseConstants.KEY_SENDER_ID, mCurrentUser.getObjectId());
 
-                ParseRelation<ParseUser> senderRelation = commentItem.getRelation(ParseConstants.KEY_RELATION_COMMENT_SENDER);
-                senderRelation.add(mCurrentUser);
+                    //START: Added comment object to the list
+                    mCommentList.add(commentItem);
+                    mCommentAdapter = new CommentAdapter(mCommentList);
+                    mCommentInputEditText.setText("");
+                    mRecyclerView.setAdapter(mCommentAdapter);
+                    //END: Added comment object to the list.
 
-                ParseRelation<ParseObject> targetPost = commentItem.getRelation(ParseConstants.KEY_RELATION_TARGET_POST);
-                targetPost.add(mSelectedPost);
+                    ParseRelation<ParseUser> senderRelation = commentItem.getRelation(ParseConstants.KEY_RELATION_COMMENT_SENDER);
+                    senderRelation.add(mCurrentUser);
 
-                ParseRelation<ParseObject> commentRelationOnPost = mSelectedPost.getRelation(ParseConstants.KEY_RELATION_COMMENT);
-                commentRelationOnPost.add(commentItem);
+                    ParseRelation<ParseObject> targetPost = commentItem.getRelation(ParseConstants.KEY_RELATION_TARGET_POST);
+                    targetPost.add(mSelectedPost);
+
+                    ParseRelation<ParseObject> commentRelationOnPost = mSelectedPost.getRelation(ParseConstants.KEY_RELATION_COMMENT);
+                    commentRelationOnPost.add(commentItem);
+
+                    commentItem.saveInBackground(new SaveCallback() {
+                        @Override
+                        public void done(ParseException e) {
+                            if (e == null) {
+                                //save comment success
+                                mSelectedPost.saveInBackground(new SaveCallback() {
+                                    @Override
+                                    public void done(ParseException e) {
+                                        if (e == null) {
+                                            //save post success
+                                            try {
+                                                loadCurrentComment();
+                                            } catch (ParseException e1) {
+                                                e1.printStackTrace();
+                                            }
+                                            Toast.makeText(FullPostActivity.this, "Comment Sent", Toast.LENGTH_LONG).show();
+
+                                        } else {
+                                            //save post failed
+                                        }
+                                    }
+                                });
+                            } else {
+                                //save comment failed
+
+                            }
+                        }
+                    });
+                } else {
+                    Toast.makeText(FullPostActivity.this, "Please type something to comment", Toast.LENGTH_LONG).show();
+
+                }
 
 // IDEA TO MINIMIZE REQUEST
 //                commentItem.saveEventually();
@@ -180,38 +224,10 @@ public class FullPostActivity extends ActionBarActivity {
 //                    }
 //                });
 
-                commentItem.saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        if (e == null){
-                            //save comment success
-                            mSelectedPost.saveInBackground(new SaveCallback() {
-                                @Override
-                                public void done(ParseException e) {
-                                    if (e == null ){
-                                      //save post success
-                                        try {
-                                            loadCurrentComment();
-                                        } catch (ParseException e1) {
-                                            e1.printStackTrace();
-                                        }
-                                        Toast.makeText(FullPostActivity.this, "Comment Sent", Toast.LENGTH_LONG).show();
 
-                                    } else {
-                                        //save post failed
-                                    }
-                                }
-                            });
-                        } else {
-                            //save comment failed
-
-                        }
-                    }
-                });
 
             }
         });
-
 
 
     }
@@ -220,18 +236,15 @@ public class FullPostActivity extends ActionBarActivity {
 
         mCommentList.clear();
         ParseRelation<ParseObject> currentComments = mSelectedPost.getRelation(ParseConstants.KEY_RELATION_COMMENT);
-        ArrayList<ParseObject> currentCommentsList = (ArrayList<ParseObject>) currentComments.getQuery().addAscendingOrder(ParseConstants.KEY_CREATED_AT).find();
-
-        //List<ParseObject> currentCommentsList = mSelectedPost.getList(ParseConstants.KEY_RELATION_COMMENT);
-        int i = 0;
-        for (ParseObject currentComment : currentCommentsList) {
-            mCommentList.add(currentComment.getString(ParseConstants.KEY_COMMENT_TEXT));
-            i++;
-        }
-
+        mCommentList = (ArrayList<ParseObject>) currentComments.getQuery().addAscendingOrder(ParseConstants.KEY_CREATED_AT).find();
         mCommentAdapter = new CommentAdapter(mCommentList);
         mCommentInputEditText.setText("");
         mRecyclerView.setAdapter(mCommentAdapter);
+
+
+    }
+
+    private void loadCurrentCommentInListView() {
 
 
     }
@@ -337,14 +350,6 @@ public class FullPostActivity extends ActionBarActivity {
 
     private void initSoShopButtonStatus(final ParseObject shopPost) {
         //START: SET ACTION and VIEW for SOSHOP BUTTON
-
-
-//        if (mPostVotedSoShopByUser.contains(shopPost)){
-//            mSoShopButton.setText("Voted!");
-//            mNoShopButton.setEnabled(false);
-//        } else {
-//            mSoShopButton.setText("SoShop");
-//        }
 
         mSoShopButton.setOnClickListener(new View.OnClickListener() {
             @Override

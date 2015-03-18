@@ -245,7 +245,7 @@ public class PostActivity extends ActionBarActivity {
         //create Parse Object for post.
         ParseObject soShopPost = new ParseObject(ParseConstants.CLASS_SOSHOPPOST);
 
-        soShopPost.put(ParseConstants.KEY_SENDER_IDS, ParseUser.getCurrentUser().getObjectId()); //add sender Id
+        soShopPost.put(ParseConstants.KEY_POST_SENDER_ID, ParseUser.getCurrentUser().getObjectId()); //add sender Id
         soShopPost.put(ParseConstants.KEY_ITEM_NAME, itemName);
         soShopPost.put(ParseConstants.KEY_ITEM_PRICE, itemPriceInt);
         soShopPost.put(ParseConstants.KEY_CURRENCY, currency);
@@ -283,7 +283,7 @@ public class PostActivity extends ActionBarActivity {
         ParseRelation<ParseUser> soShopPostSender = soShopPost.getRelation(ParseConstants.KEY_RELATION_POST_SENDER);
         ParseUser currentUser = ParseUser.getCurrentUser();
 
-        soShopPost.put(ParseConstants.KEY_SENDER_IDS, currentUser.getObjectId()); //add sender Id
+        soShopPost.put(ParseConstants.KEY_POST_SENDER_ID, currentUser.getObjectId()); //add sender Id
         soShopPost.put(ParseConstants.KEY_ITEM_NAME, itemName);
         soShopPost.put(ParseConstants.KEY_ITEM_PRICE, itemPriceInt);
         soShopPost.put(ParseConstants.KEY_CURRENCY, currency);

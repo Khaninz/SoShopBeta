@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 
 import soshop.social.soshop.FullPostActivity;
+import soshop.social.soshop.ProfileActivity;
 import soshop.social.soshop.R;
 import soshop.social.soshop.Utils.ParseConstants;
 
@@ -79,6 +80,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         private TextView mCreatedAt;
         private ImageView mSoShopBar;
         private Button mCommentButton;
+        private ImageView mSenderImage;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -96,6 +98,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
             mCreatedAt = (TextView) itemView.findViewById(R.id.createdAt);
             mSoShopBar = (ImageView) itemView.findViewById(R.id.soShopBar);
             mCommentButton = (Button) itemView.findViewById(R.id.commentButton);
+            mSenderImage = (ImageView) itemView.findViewById(R.id.senderImage);
 
         }
 
@@ -138,6 +141,9 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         public Button getCommentButton(){
             return mCommentButton;
         }
+        public ImageView getSenderImage(){
+            return mSenderImage;
+        }
 
     }
 
@@ -166,7 +172,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
                 String tempNoShopButtonText = (String) viewHolder.getNoShopButton().getText();
                 Boolean tempSoShopButtonStatus;
                 Boolean tempNoShopButtonStatus;
-                if (shopPost.get(ParseConstants.KEY_SENDER_IDS).equals(ParseUser.getCurrentUser().getObjectId())) {
+                if (shopPost.get(ParseConstants.KEY_POST_SENDER_ID).equals(ParseUser.getCurrentUser().getObjectId())) {
                     tempNoShopButtonStatus = false;
                     tempSoShopButtonStatus = false;
                 }else{
@@ -202,7 +208,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         //END: add image from Parse to imageView using tool from Picasso
 
         //START: disable vote if it is user's own post, and get status of voted button for each post relate to user
-        if (shopPost.get(ParseConstants.KEY_SENDER_IDS).equals(ParseUser.getCurrentUser().getObjectId())) {
+        if (shopPost.get(ParseConstants.KEY_POST_SENDER_ID).equals(ParseUser.getCurrentUser().getObjectId())) {
 
             viewHolder.getSoShopButton().setEnabled(false);
             viewHolder.getSoShopButton().setText("SoShop");
@@ -219,8 +225,31 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         }
         //END: disable vote if it is user's own post, and get status of voted button for each post relate to user
 
+        viewHolder.getSenderName().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                navigateToProfilePage(shopPost);
+            }
+        });
+
+        viewHolder.getSenderImage().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigateToProfilePage(shopPost);
+            }
+        });
 
 
+    }
+
+    private void navigateToProfilePage(ParseObject shopPost) {
+        String senderId = shopPost.getString(ParseConstants.KEY_POST_SENDER_ID);
+        String senderName = shopPost.getString(ParseConstants.KEY_SENDER_FIRST_NAME);
+        Intent intent = new Intent(mContext, ProfileActivity.class);
+        intent.putExtra("SENDER_ID",senderId);
+        intent.putExtra("SENDER_FIRST_NAME",senderName);
+        mContext.startActivity(intent);
     }
 
     private void initNoShopButtonStatus(final ViewHolder viewHolder, final ParseObject shopPost) {
@@ -477,6 +506,8 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         String firstName = (String) soShopPost.get(ParseConstants.KEY_SENDER_FIRST_NAME);
         String lastName = (String) soShopPost.get(ParseConstants.KEY_SENDER_LAST_NAME);
         viewHolder.getSenderName().setText(firstName+" "+lastName);
+
+
 
         //time created
         Date createdAt = soShopPost.getCreatedAt(); //object from parse

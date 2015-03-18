@@ -302,14 +302,14 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         // 2 conditions in query have to work as Or operator
         //query for user's post
         ParseQuery<ParseObject> userPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
-        userPostQuery.whereEqualTo(ParseConstants.KEY_SENDER_IDS, mCurrentUser.getObjectId());
+        userPostQuery.whereEqualTo(ParseConstants.KEY_POST_SENDER_ID, mCurrentUser.getObjectId());
         //userPostQuery.whereEqualTo(ParseConstants.KEY_RELATION_POST_SENDER, mCurrentUser);
 
 
         //query for friend of user post.
         ParseQuery<ParseObject> userFriendsPostQuery = new ParseQuery<ParseObject>(ParseConstants.CLASS_SOSHOPPOST);
         //userFriendsPostQuery.whereEqualTo(ParseConstants.KEY_RECIPIENT_IDS, mCurrentUser.getObjectId()); //query to match Post Recipient Ids with current user Ids.
-        userFriendsPostQuery.whereContainedIn(ParseConstants.KEY_SENDER_IDS, friendsIds); // query to match Sender Ids of post to the friend Ids of user. this is add to fix when post is still show when user unfriend the poster.
+        userFriendsPostQuery.whereContainedIn(ParseConstants.KEY_POST_SENDER_ID, friendsIds); // query to match Sender Ids of post to the friend Ids of user. this is add to fix when post is still show when user unfriend the poster.
         //userFriendsPostQuery.whereContainedIn(ParseConstants.KEY_RELATION_POST_SENDER, friends);
 
         // add or operator
