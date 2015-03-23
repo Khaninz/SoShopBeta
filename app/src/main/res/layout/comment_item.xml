@@ -11,6 +11,7 @@
 
     <TextView
         android:id="@+id/userNameTextView"
+        android:text="First Last"
         android:textStyle="bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

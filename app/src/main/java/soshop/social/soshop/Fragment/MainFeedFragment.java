@@ -152,7 +152,7 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
             } catch (ParseException e) {
                 e.printStackTrace();
                 Toast.makeText(getActivity(), "Load from local fail, please try again", Toast.LENGTH_LONG).show();
-                ;
+
 
             }
         } else {
@@ -178,24 +178,12 @@ public class MainFeedFragment extends android.support.v4.app.Fragment {
         mCurrentUserVoteNoShopRelation.getQuery().findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
-                if (e==null){
+                if (e == null){
                     mPostVotedNoShopByUser = parseObjects;
                 }
             }
         });
 
-
-//        try {
-//            //get relation for SoShop to render and button status
-//            mPostVotedSoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteSoShopRelation.getQuery().find();
-//
-//            //get relation for NoShop to render and init button status
-//            mPostVotedNoShopByUser = (ArrayList<ParseObject>) mCurrentUserVoteNoShopRelation.getQuery().find();
-//
-//        } catch (ParseException e) {
-//            e.printStackTrace();
-//            Toast.makeText(getActivity(),"Error getting vote status of User",Toast.LENGTH_LONG).show();
-//        }
     }
 
     private void retrieveFeedFromLocalAndStartViewAdapter() throws ParseException {

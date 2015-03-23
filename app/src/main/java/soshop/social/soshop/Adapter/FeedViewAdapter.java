@@ -28,6 +28,7 @@ import java.util.List;
 import soshop.social.soshop.FullPostActivity;
 import soshop.social.soshop.ProfileActivity;
 import soshop.social.soshop.R;
+import soshop.social.soshop.Utils.IntentConstants;
 import soshop.social.soshop.Utils.ParseConstants;
 
 /**
@@ -80,7 +81,9 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         private TextView mCreatedAt;
         private ImageView mSoShopBar;
         private Button mCommentButton;
+        private TextView mCommentNumber;
         private ImageView mSenderImage;
+
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -99,6 +102,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
             mSoShopBar = (ImageView) itemView.findViewById(R.id.soShopBar);
             mCommentButton = (Button) itemView.findViewById(R.id.commentButton);
             mSenderImage = (ImageView) itemView.findViewById(R.id.senderImage);
+            mCommentNumber = (TextView) itemView.findViewById(R.id.totalComment);
 
         }
 
@@ -144,6 +148,9 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         public ImageView getSenderImage(){
             return mSenderImage;
         }
+        public TextView getCommentNumber(){
+            return mCommentNumber;
+        }
 
     }
 
@@ -168,35 +175,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
             @Override
             public void onClick(View v) {
 
-                String tempSoShopButtonText = (String) viewHolder.getSoShopButton().getText();
-                String tempNoShopButtonText = (String) viewHolder.getNoShopButton().getText();
-                Boolean tempSoShopButtonStatus;
-                Boolean tempNoShopButtonStatus;
-                if (shopPost.get(ParseConstants.KEY_POST_SENDER_ID).equals(ParseUser.getCurrentUser().getObjectId())) {
-                    tempNoShopButtonStatus = false;
-                    tempSoShopButtonStatus = false;
-                }else{
-                    if (mPostVotedSoShopByUser.contains(shopPost)) {
-                        //if soshop is voted, disable noShopButton
-                        tempNoShopButtonStatus = false;
-                    } else {
-                        tempNoShopButtonStatus = true;
-                    }
-                    if (mPostVotedNoShopByUser.contains(shopPost)) {
-                        tempSoShopButtonStatus = false;
-                    } else {
-                        tempSoShopButtonStatus = true;
-                    }
-                }
-
-                String soShopPostObjectId = shopPost.getObjectId();
-                Intent fullPostIntent = new Intent(mContext, FullPostActivity.class);
-                fullPostIntent.putExtra("soShopPostObjectId", soShopPostObjectId);
-                fullPostIntent.putExtra("SoShopButtonStatus", tempSoShopButtonStatus);
-                fullPostIntent.putExtra("SoShopButtonText",tempSoShopButtonText);
-                fullPostIntent.putExtra("NoShopButtonStatus", tempNoShopButtonStatus);
-                fullPostIntent.putExtra("NoShopButtonText",tempNoShopButtonText);
-                mContext.startActivity(fullPostIntent);
+                navigateToFullPostPage(viewHolder, shopPost);
             }
         });
         //END: comment button for each post
@@ -225,6 +204,7 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         }
         //END: disable vote if it is user's own post, and get status of voted button for each post relate to user
 
+        //START add link to profile page
         viewHolder.getSenderName().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -239,16 +219,25 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
                 navigateToProfilePage(shopPost);
             }
         });
+        //END add link to profile page
 
+    }
 
+    private void navigateToFullPostPage(ViewHolder viewHolder, ParseObject shopPost) {
+
+        String soShopPostObjectId = shopPost.getObjectId();
+        Intent fullPostIntent = new Intent(mContext, FullPostActivity.class);
+        fullPostIntent.putExtra(IntentConstants.KEY_SOSHOP_POST_ID, soShopPostObjectId);
+
+        mContext.startActivity(fullPostIntent);
     }
 
     private void navigateToProfilePage(ParseObject shopPost) {
         String senderId = shopPost.getString(ParseConstants.KEY_POST_SENDER_ID);
         String senderName = shopPost.getString(ParseConstants.KEY_SENDER_FIRST_NAME);
         Intent intent = new Intent(mContext, ProfileActivity.class);
-        intent.putExtra("SENDER_ID",senderId);
-        intent.putExtra("SENDER_FIRST_NAME",senderName);
+        intent.putExtra(IntentConstants.KEY_USER_ID,senderId);
+        //intent.putExtra("SENDER_FIRST_NAME",senderName);
         mContext.startActivity(intent);
     }
 
@@ -492,6 +481,10 @@ public class FeedViewAdapter extends RecyclerView.Adapter<FeedViewAdapter.ViewHo
         String itemPrice = itemPriceInt +"";
         String currency = (String) soShopPost.get(ParseConstants.KEY_CURRENCY);
         viewHolder.getItemPrice().setText(currency + " " + itemPrice);
+        //comment number
+        int commentNumber = soShopPost.getInt(ParseConstants.KEY_COMMENT_NUMBER);
+        viewHolder.getCommentNumber().setText("("+commentNumber+")");
+
 
         //item location description
         String itemLocation = (String) soShopPost.get(ParseConstants.KEY_LOCATION_DESCRIPTION);

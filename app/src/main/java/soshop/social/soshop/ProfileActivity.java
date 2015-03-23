@@ -3,8 +3,11 @@ package soshop.social.soshop;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,32 +21,54 @@ import com.parse.ParseUser;
 import java.util.ArrayList;
 import java.util.List;
 
+import soshop.social.soshop.Adapter.PostGridViewAdapter;
+import soshop.social.soshop.Adapter.UserGridViewAdapter;
+import soshop.social.soshop.Utils.IntentConstants;
 import soshop.social.soshop.Utils.ParseConstants;
 
 
 public class ProfileActivity extends ActionBarActivity {
+
+    //member for UI
+    private TextView mFriendsNumber;
+    private TextView mPostNumber;
+    private TextView mVoteNumber;
+    private TextView mProfileName;
+
+    //member for Recycler View
+    protected RecyclerView mRecyclerView;
+    protected PostGridViewAdapter mPostAdapter;
+    protected UserGridViewAdapter mUserAdapter;
+
+    protected RecyclerView.LayoutManager mLayoutManager;
+
+    //member for List of ParseObjects
+    private List<ParseUser> mFrieds;
+    private List<ParseObject> mPostByUser;
+    private List<ParseObject> mVoteByUser;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        final TextView mFriendsNumber;
-        final TextView mPostNumber;
-        final TextView mVoteNumber;
-        final TextView mProfileName;
-
-
         mFriendsNumber = (TextView) findViewById(R.id.friendsNumber);
         mPostNumber = (TextView) findViewById(R.id.postNumber);
         mVoteNumber = (TextView) findViewById(R.id.voteNumber);
         mProfileName = (TextView) findViewById(R.id.profileName);
 
-        Intent intent = getIntent();
-        String senderId = intent.getStringExtra("SENDER_ID");
-        String senderName = intent.getStringExtra("SENDER_FIRST_NAME");
+        //START: Recycler View
+        mRecyclerView = (RecyclerView) findViewById(R.id.gridRecyclerView);
+        mLayoutManager = new GridLayoutManager(ProfileActivity.this, 4);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        //END: Recycler View
 
-        Toast.makeText(this, senderName + ": " + senderId, Toast.LENGTH_LONG).show();
+        Intent intent = getIntent();
+        String senderId = intent.getStringExtra(IntentConstants.KEY_USER_ID);
+//        String senderName = intent.getStringExtra("SENDER_FIRST_NAME");
+//
+//        Toast.makeText(this, senderName + ": " + senderId, Toast.LENGTH_LONG).show();
 
         final ParseQuery<ParseUser> query = ParseUser.getQuery();
         query.whereEqualTo(ParseConstants.KEY_OBJECT_ID, senderId);
@@ -59,26 +84,30 @@ public class ProfileActivity extends ActionBarActivity {
                     String firstName = displayUser.getString(ParseConstants.KEY_FIRST_NAME);
                     String lastName = displayUser.getString(ParseConstants.KEY_LAST_NAME);
 
-                    mProfileName.setText(firstName+" "+lastName);
+                    mProfileName.setText(firstName + " " + lastName);
 
                     ParseRelation<ParseUser> friendsRelation = displayUser.getRelation(ParseConstants.KEY_RELATION_FRIENDS);
-                    friendsRelation.getQuery().findInBackground(new FindCallback<ParseUser>() {
+
+                    friendsRelation.getQuery().addAscendingOrder(ParseConstants.KEY_FIRST_NAME).findInBackground(new FindCallback<ParseUser>() {
                         @Override
                         public void done(List<ParseUser> friends, ParseException e) {
 
                             mFriendsNumber.setText(friends.size() + "");
+                            mFrieds = friends;
                         }
                     });
 
                     ParseQuery<ParseObject> queryForUserPost = ParseQuery.getQuery(ParseConstants.CLASS_SOSHOPPOST);
-                    queryForUserPost.whereEqualTo(ParseConstants.KEY_POST_SENDER_ID,displayUserId);
+                    queryForUserPost.whereEqualTo(ParseConstants.KEY_POST_SENDER_ID, displayUserId);
                     queryForUserPost.addDescendingOrder(ParseConstants.KEY_CREATED_AT);
                     queryForUserPost.findInBackground(new FindCallback<ParseObject>() {
                         @Override
                         public void done(List<ParseObject> userPosts, ParseException e) {
-                            if(e==null){
-                            mPostNumber.setText(userPosts.size()+"");
-                        }}
+                            if (e == null) {
+                                mPostNumber.setText(userPosts.size() + "");
+                                mPostByUser = userPosts;
+                            }
+                        }
                     });
 
                     ParseQuery<ParseObject> queryForUserSoShopVote = ParseQuery.getQuery(ParseConstants.CLASS_SOSHOPPOST);
@@ -99,10 +128,18 @@ public class ProfileActivity extends ActionBarActivity {
                     queryForAllUserVote.findInBackground(new FindCallback<ParseObject>() {
                         @Override
                         public void done(List<ParseObject> parseObjects, ParseException e) {
-                            mVoteNumber.setText(parseObjects.size()+"");
+                            mVoteNumber.setText(parseObjects.size() + "");
+
+                            mVoteNumber.setTextColor(getResources().getColor(R.color.selected_text));
+                            mPostNumber.setTextColor(getResources().getColor(R.color.normal_text));
+                            mFriendsNumber.setTextColor(getResources().getColor(R.color.normal_text));
+
+                            mVoteByUser = parseObjects;
+
+                            mPostAdapter = new PostGridViewAdapter(ProfileActivity.this, mVoteByUser);
+                            mRecyclerView.setAdapter(mPostAdapter);
                         }
                     });
-
 
 
                 } else {
@@ -110,6 +147,59 @@ public class ProfileActivity extends ActionBarActivity {
                 }
             }
         });
+
+        mPostNumber.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (mPostByUser != null) {
+                    //mPost by user is not empty
+                    mPostAdapter = new PostGridViewAdapter(ProfileActivity.this, mPostByUser);
+                    mRecyclerView.setAdapter(mPostAdapter);
+
+                    mPostNumber.setTextColor(getResources().getColor(R.color.selected_text));
+                    mVoteNumber.setTextColor(getResources().getColor(R.color.normal_text));
+                    mFriendsNumber.setTextColor(getResources().getColor(R.color.normal_text));
+                } else {
+                    //if empty
+                    //show UI and Link to add friends or post
+
+                }
+            }
+        });
+
+        mVoteNumber.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mVoteByUser != null) {
+                    //if not empty
+                    mPostAdapter = new PostGridViewAdapter(ProfileActivity.this, mVoteByUser);
+                    mRecyclerView.setAdapter(mPostAdapter);
+
+                    mPostNumber.setTextColor(getResources().getColor(R.color.normal_text));
+                    mVoteNumber.setTextColor(getResources().getColor(R.color.selected_text));
+                    mFriendsNumber.setTextColor(getResources().getColor(R.color.normal_text));
+                }
+            }
+        });
+
+        mFriendsNumber.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mFrieds != null) {
+                    mUserAdapter = new UserGridViewAdapter(ProfileActivity.this, mFrieds);
+                    mRecyclerView.setAdapter(mUserAdapter);
+
+                    mPostNumber.setTextColor(getResources().getColor(R.color.normal_text));
+                    mVoteNumber.setTextColor(getResources().getColor(R.color.normal_text));
+                    mFriendsNumber.setTextColor(getResources().getColor(R.color.selected_text));
+                }
+            }
+        });
+
+
+
+
     }
 
 

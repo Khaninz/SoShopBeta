@@ -93,12 +93,15 @@
         android:text="Friends"
         android:layout_alignLeft="@+id/friendsNumber"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+
+        />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/communitiesNumber"
         android:layout_alignLeft="@+id/communitiesNumber"
+        android:layout_marginTop="15dp"
         android:text="Communities"
         />
     <TextView
@@ -106,6 +109,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/postNumber"
         android:layout_alignLeft="@+id/postNumber"
+
         android:text="Post"
         />
     <TextView
@@ -115,5 +119,17 @@
         android:layout_alignLeft="@+id/voteNumber"
         android:text="Vote"
         />
+
+
+    <android.support.v7.widget.RecyclerView
+    android:id="@+id/gridRecyclerView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/profileImage"
+        android:layout_marginTop="150dp"
+    android:background="@color/background_light_grey"
+        android:padding="2dp"
+
+    />
 
 </RelativeLayout>

@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -30,8 +31,10 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import soshop.social.soshop.Adapter.CommentAdapter;
+import soshop.social.soshop.Utils.IntentConstants;
 import soshop.social.soshop.Utils.ParseConstants;
 
 
@@ -50,6 +53,7 @@ public class FullPostActivity extends ActionBarActivity {
     private TextView mCreatedAt;
     private ImageView mSoShopBar;
     private Button mCommentButton;
+    private TextView mCommentNumber;
 
     private Button mSendCommentButton;
     private EditText mCommentInputEditText;
@@ -86,21 +90,18 @@ public class FullPostActivity extends ActionBarActivity {
         mCreatedAt = (TextView) findViewById(R.id.createdAt);
         mSoShopBar = (ImageView) findViewById(R.id.soShopBar);
         mCommentButton = (Button) findViewById(R.id.commentButton);
+        mCommentNumber = (TextView) findViewById(R.id.totalComment);
 
         mSendCommentButton = (Button) findViewById(R.id.sendCommentButton);
         mCommentInputEditText = (EditText) findViewById(R.id.commentInputEditText);
 
         Intent intent = getIntent();
-        String soShopPostObjectId = intent.getStringExtra("soShopPostObjectId");
-        Boolean soShopButtonStatus = intent.getBooleanExtra("SoShopButtonStatus", true);
-        String soShopButtonText = intent.getStringExtra("SoShopButtonText");
-        Boolean noShopButtonStatus = intent.getBooleanExtra("NoShopButtonStatus", true);
-        String noShopButtonText = intent.getStringExtra("NoShopButtonText");
+        String soShopPostObjectId = intent.getStringExtra(IntentConstants.KEY_SOSHOP_POST_ID);
 
-        mSoShopButton.setEnabled(soShopButtonStatus);
-        mSoShopButton.setText(soShopButtonText);
-        mNoShopButton.setEnabled(noShopButtonStatus);
-        mNoShopButton.setText(noShopButtonText);
+        mSoShopButton.setEnabled(false);
+        mNoShopButton.setEnabled(false);
+        mCommentButton.setEnabled(false);
+
 
         mCurrentUser = ParseUser.getCurrentUser();
         mCurrentUserVoteSoShopRelation = mCurrentUser.getRelation(ParseConstants.KEY_RELATION_SOSHOP_VOTE);
@@ -122,6 +123,47 @@ public class FullPostActivity extends ActionBarActivity {
                 if (e ==null) {
                     mSelectedPost = parseObject;
                     addDetailToFullPost(mSelectedPost, mContext);
+
+                    mCommentButton.setEnabled(true);
+                    mNoShopButton.setEnabled(true);
+                    mSoShopButton.setEnabled(true);
+
+                    int tempCommentNumber = mSelectedPost.getInt(ParseConstants.KEY_COMMENT_NUMBER);
+                    mCommentNumber.setText("("+tempCommentNumber+")");
+
+                    if (mSelectedPost.getString(ParseConstants.KEY_POST_SENDER_ID).equals(mCurrentUser.getObjectId())){
+                        mNoShopButton.setEnabled(false);
+                        mSoShopButton.setEnabled(false);
+                    }
+
+                    mCurrentUserVoteSoShopRelation.getQuery().findInBackground(new FindCallback<ParseObject>() {
+                        @Override
+                        public void done(List<ParseObject> postsVoteSoShopByUser, ParseException e) {
+                            if(e == null) {
+                                if (postsVoteSoShopByUser.contains(mSelectedPost)) {
+                                    mSoShopButton.setText("Voted!");
+                                    mSoShopButton.setEnabled(true);
+                                    mNoShopButton.setEnabled(false);
+                                }
+                            }
+                        }
+                    });
+
+                    mCurrentUserVoteNoShopRelation.getQuery().findInBackground(new FindCallback<ParseObject>() {
+                        @Override
+                        public void done(List<ParseObject> postsVoteNoShopByUser, ParseException e) {
+                            if(e == null){
+                                if(postsVoteNoShopByUser.contains(mSelectedPost)){
+                                    mNoShopButton.setText("Voted!");
+                                    mNoShopButton.setEnabled(true);
+                                    mSoShopButton.setEnabled(false);
+                                }
+
+                            }
+
+                        }
+                    });
+
 
                     initSoShopButtonStatus(mSelectedPost);
                     initNoShopButtonStatus(mSelectedPost);
@@ -154,23 +196,29 @@ public class FullPostActivity extends ActionBarActivity {
                     // save
                     ParseObject commentItem = new ParseObject(ParseConstants.CLASS_COMMENT);
                     commentItem.put(ParseConstants.KEY_COMMENT_TEXT, comment);
-                    commentItem.put(ParseConstants.KEY_SENDER_ID, mCurrentUser.getObjectId());
+                    commentItem.put(ParseConstants.KEY_COMMENT_SENDER_ID, mCurrentUser.getObjectId());
 
-                    //START: Added comment object to the list
+                    //START: Added comment object to the list, for quick visualizing
                     mCommentList.add(commentItem);
                     mCommentAdapter = new CommentAdapter(mCommentList);
                     mCommentInputEditText.setText("");
                     mRecyclerView.setAdapter(mCommentAdapter);
+
+                    int tempCommentNumber = mSelectedPost.getInt(ParseConstants.KEY_COMMENT_NUMBER);
+                    tempCommentNumber++;
+                    mCommentNumber.setText("(" + tempCommentNumber + ")");
+
                     //END: Added comment object to the list.
+
 
                     ParseRelation<ParseUser> senderRelation = commentItem.getRelation(ParseConstants.KEY_RELATION_COMMENT_SENDER);
                     senderRelation.add(mCurrentUser);
-
                     ParseRelation<ParseObject> targetPost = commentItem.getRelation(ParseConstants.KEY_RELATION_TARGET_POST);
                     targetPost.add(mSelectedPost);
 
                     ParseRelation<ParseObject> commentRelationOnPost = mSelectedPost.getRelation(ParseConstants.KEY_RELATION_COMMENT);
                     commentRelationOnPost.add(commentItem);
+                    mSelectedPost.increment(ParseConstants.KEY_COMMENT_NUMBER, 1);
 
                     commentItem.saveInBackground(new SaveCallback() {
                         @Override
@@ -237,15 +285,20 @@ public class FullPostActivity extends ActionBarActivity {
         mCommentList.clear();
         ParseRelation<ParseObject> currentComments = mSelectedPost.getRelation(ParseConstants.KEY_RELATION_COMMENT);
         mCommentList = (ArrayList<ParseObject>) currentComments.getQuery().addAscendingOrder(ParseConstants.KEY_CREATED_AT).find();
+//        ParseQuery<ParseObject> commentQuery = currentComments.getQuery();
+//        //commentQuery.include(ParseConstants.KEY_RELATION_COMMENT_SENDER);
+//        commentQuery.addAscendingOrder(ParseConstants.KEY_CREATED_AT);
+//        commentQuery.findInBackground(new FindCallback<ParseObject>() {
+//            @Override
+//            public void done(List<ParseObject> parseObjects, ParseException e) {
+//                mCommentList = (ArrayList<ParseObject>) parseObjects;
+//            }
+//        });
+
+
         mCommentAdapter = new CommentAdapter(mCommentList);
         mCommentInputEditText.setText("");
         mRecyclerView.setAdapter(mCommentAdapter);
-
-
-    }
-
-    private void loadCurrentCommentInListView() {
-
 
     }
 
@@ -263,8 +316,6 @@ public class FullPostActivity extends ActionBarActivity {
                 try {
                     //Check if user is already voted.
                     ArrayList<ParseUser> votedUsers = (ArrayList<ParseUser>) isVotedNoShopRelation.getQuery().find();
-
-
                     Boolean isContained = votedUsers.contains(mCurrentUser);
 
                     if (isContained) {

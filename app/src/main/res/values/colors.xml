@@ -3,4 +3,7 @@
     <color name="background_light_grey">#e5e5e5</color>
     <color name="soshop_color">#ff7400</color>
     <color name="noshop_color">#009999</color>
+
+    <color name="selected_text">#008bdb</color>
+    <color name="normal_text">#000000</color>
 </resources>
