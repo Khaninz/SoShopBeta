@@ -64,10 +64,6 @@ public class FullPostActivity extends ActionBarActivity {
     private ParseUser mCurrentUser;
     private ParseRelation<ParseObject> mCurrentUserVoteSoShopRelation;
     private ParseRelation<ParseObject> mCurrentUserVoteNoShopRelation;
-    private ArrayList<ParseObject> mPostVotedSoShopByUser;
-    private ArrayList<String> mPostIdsVotedSoShopByUser;
-    private ArrayList<ParseObject> mPostVotedNoShopByUser;
-    private ArrayList<String> mPostIdsVotedNoShopByUser;
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
 
@@ -98,6 +94,7 @@ public class FullPostActivity extends ActionBarActivity {
         Intent intent = getIntent();
         String soShopPostObjectId = intent.getStringExtra(IntentConstants.KEY_SOSHOP_POST_ID);
 
+        //Initially disable button before loading.
         mSoShopButton.setEnabled(false);
         mNoShopButton.setEnabled(false);
         mCommentButton.setEnabled(false);
@@ -114,12 +111,11 @@ public class FullPostActivity extends ActionBarActivity {
         final Context mContext = getBaseContext();
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseConstants.CLASS_SOSHOPPOST);
-        //query.include(ParseConstants.KEY_RELATION_COMMENT);
 
         query.getInBackground(soShopPostObjectId, new GetCallback<ParseObject>() {
             @Override
             public void done(ParseObject parseObject, ParseException e) {
-                //Toast.makeText(mContext, selectedPost.getObjectId(), Toast.LENGTH_LONG).show();
+
                 if (e ==null) {
                     mSelectedPost = parseObject;
                     addDetailToFullPost(mSelectedPost, mContext);
@@ -128,8 +124,7 @@ public class FullPostActivity extends ActionBarActivity {
                     mNoShopButton.setEnabled(true);
                     mSoShopButton.setEnabled(true);
 
-                    int tempCommentNumber = mSelectedPost.getInt(ParseConstants.KEY_COMMENT_NUMBER);
-                    mCommentNumber.setText("("+tempCommentNumber+")");
+
 
                     if (mSelectedPost.getString(ParseConstants.KEY_POST_SENDER_ID).equals(mCurrentUser.getObjectId())){
                         mNoShopButton.setEnabled(false);
@@ -158,9 +153,7 @@ public class FullPostActivity extends ActionBarActivity {
                                     mNoShopButton.setEnabled(true);
                                     mSoShopButton.setEnabled(false);
                                 }
-
                             }
-
                         }
                     });
 
@@ -196,7 +189,7 @@ public class FullPostActivity extends ActionBarActivity {
                     // save
                     ParseObject commentItem = new ParseObject(ParseConstants.CLASS_COMMENT);
                     commentItem.put(ParseConstants.KEY_COMMENT_TEXT, comment);
-                    commentItem.put(ParseConstants.KEY_COMMENT_SENDER_ID, mCurrentUser.getObjectId());
+                    commentItem.put(ParseConstants.KEY_COMMENT_SENDER_POINTER, mCurrentUser);
 
                     //START: Added comment object to the list, for quick visualizing
                     mCommentList.add(commentItem);
@@ -210,15 +203,13 @@ public class FullPostActivity extends ActionBarActivity {
 
                     //END: Added comment object to the list.
 
-
-                    ParseRelation<ParseUser> senderRelation = commentItem.getRelation(ParseConstants.KEY_RELATION_COMMENT_SENDER);
-                    senderRelation.add(mCurrentUser);
                     ParseRelation<ParseObject> targetPost = commentItem.getRelation(ParseConstants.KEY_RELATION_TARGET_POST);
                     targetPost.add(mSelectedPost);
 
                     ParseRelation<ParseObject> commentRelationOnPost = mSelectedPost.getRelation(ParseConstants.KEY_RELATION_COMMENT);
                     commentRelationOnPost.add(commentItem);
                     mSelectedPost.increment(ParseConstants.KEY_COMMENT_NUMBER, 1);
+
 
                     commentItem.saveInBackground(new SaveCallback() {
                         @Override
@@ -237,14 +228,14 @@ public class FullPostActivity extends ActionBarActivity {
                                             }
                                             Toast.makeText(FullPostActivity.this, "Comment Sent", Toast.LENGTH_LONG).show();
 
-                                        } else {
-                                            //save post failed
+                                        } else { //save post failed
+                                            Toast.makeText(FullPostActivity.this, "Save Post Failed (Dev mode)", Toast.LENGTH_LONG).show();
                                         }
                                     }
                                 });
-                            } else {
-                                //save comment failed
-
+                            } else { //save comment failed
+                                Toast.makeText(FullPostActivity.this, "There is an connection error, please try again",Toast.LENGTH_LONG).show();
+                                Log.i("Save comment failed: ", e.toString());
                             }
                         }
                     });
@@ -252,26 +243,6 @@ public class FullPostActivity extends ActionBarActivity {
                     Toast.makeText(FullPostActivity.this, "Please type something to comment", Toast.LENGTH_LONG).show();
 
                 }
-
-// IDEA TO MINIMIZE REQUEST
-//                commentItem.saveEventually();
-//                mSelectedPost.saveEventually();
-//                List<ParseObject> itemToSave = new ArrayList<ParseObject>();
-//                itemToSave.add(commentItem);
-//                itemToSave.add(mSelectedPost);
-//
-//                ParseObject.saveAllInBackground(itemToSave, new SaveCallback() {
-//                    @Override
-//                    public void done(ParseException e) {
-//                        Toast.makeText(FullPostActivity.this, "comment sent", Toast.LENGTH_SHORT).show();
-//                        try {
-//                            loadCurrentComment();
-//                        } catch (ParseException e1) {
-//                            e1.printStackTrace();
-//                        }
-//                    }
-//                });
-
 
 
             }
@@ -285,17 +256,6 @@ public class FullPostActivity extends ActionBarActivity {
         mCommentList.clear();
         ParseRelation<ParseObject> currentComments = mSelectedPost.getRelation(ParseConstants.KEY_RELATION_COMMENT);
         mCommentList = (ArrayList<ParseObject>) currentComments.getQuery().addAscendingOrder(ParseConstants.KEY_CREATED_AT).find();
-//        ParseQuery<ParseObject> commentQuery = currentComments.getQuery();
-//        //commentQuery.include(ParseConstants.KEY_RELATION_COMMENT_SENDER);
-//        commentQuery.addAscendingOrder(ParseConstants.KEY_CREATED_AT);
-//        commentQuery.findInBackground(new FindCallback<ParseObject>() {
-//            @Override
-//            public void done(List<ParseObject> parseObjects, ParseException e) {
-//                mCommentList = (ArrayList<ParseObject>) parseObjects;
-//            }
-//        });
-
-
         mCommentAdapter = new CommentAdapter(mCommentList);
         mCommentInputEditText.setText("");
         mRecyclerView.setAdapter(mCommentAdapter);
@@ -517,6 +477,9 @@ public class FullPostActivity extends ActionBarActivity {
         String itemPrice = itemPriceInt + "";
         String currency = (String) selectedPost.get(ParseConstants.KEY_CURRENCY);
         mItemPrice.setText(currency + " " + itemPrice);
+
+        int tempCommentNumber = selectedPost.getInt(ParseConstants.KEY_COMMENT_NUMBER);
+        mCommentNumber.setText("("+tempCommentNumber+")");
 
         //item location description
         String itemLocation = (String) selectedPost.get(ParseConstants.KEY_LOCATION_DESCRIPTION);

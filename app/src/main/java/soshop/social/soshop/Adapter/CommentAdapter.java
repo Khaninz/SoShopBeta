@@ -6,10 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.parse.GetCallback;
-import com.parse.ParseException;
 import com.parse.ParseObject;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.List;
@@ -68,24 +65,12 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
 
         holder.getCommentTextView().setText(commentObject.getString(ParseConstants.KEY_COMMENT_TEXT));
 
-        String senderId = commentObject.getString(ParseConstants.KEY_COMMENT_SENDER_ID);
+        ParseUser commentSender = commentObject.getParseUser(ParseConstants.KEY_COMMENT_SENDER_POINTER);
+        String firstName = commentSender.getString(ParseConstants.KEY_FIRST_NAME);
+        String lastName = commentSender.getString(ParseConstants.KEY_LAST_NAME);
 
-        ParseQuery<ParseUser> query = ParseUser.getQuery();
-        query.getInBackground(senderId, new GetCallback<ParseUser>() {
-            @Override
-            public void done(ParseUser user, ParseException e) {
-                String firstName = user.getString(ParseConstants.KEY_FIRST_NAME);
-                String lastName = user.getString(ParseConstants.KEY_LAST_NAME);
+        holder.getSenderName().setText(firstName+" "+lastName);
 
-                holder.getSenderName().setText(firstName+" "+lastName);
-            }
-        });
-
-//        ParseObject senderObject = (ParseObject) commentObject.get(ParseConstants.KEY_RELATION_COMMENT_SENDER);
-//        String firstName = senderObject.getString(ParseConstants.KEY_FIRST_NAME);
-//        String lastName = senderObject.getString(ParseConstants.KEY_LAST_NAME);
-//
-//        holder.getSenderName().setText(firstName+" "+lastName);
 
 
     }

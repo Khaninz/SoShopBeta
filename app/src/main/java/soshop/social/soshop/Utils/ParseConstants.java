@@ -42,10 +42,9 @@ public final class ParseConstants {
     //CLASS COMMENT
     public static final String CLASS_COMMENT = "Comment";
     public static final String KEY_COMMENT_TEXT = "commentText";
-    public static final String KEY_RELATION_COMMENT_SENDER = "sender";
-    public static final String KEY_RELATION_TARGET_POST = "targetPost";
-    public static final String KEY_COMMENT_SENDER_ID = "senderId";
-    public static final String KEY_SENDER_OBJECT = "sender";
+    public static final String KEY_TARGET_POST = "targetPost";
+    public static final String KEY_RELATION_TARGET_POST = "targetPostRelation";
+    public static final String KEY_COMMENT_SENDER_POINTER = "senderPointer";
 
 
 }
