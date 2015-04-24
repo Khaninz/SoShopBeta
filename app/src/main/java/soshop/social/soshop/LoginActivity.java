@@ -12,7 +12,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.parse.LogInCallback;
 import com.parse.ParseException;
@@ -20,6 +19,9 @@ import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
 
 import java.util.Arrays;
+import java.util.Collection;
+
+import soshop.social.soshop.Utils.ParseConstants;
 
 
 public class LoginActivity extends ActionBarActivity {
@@ -40,6 +42,8 @@ public class LoginActivity extends ActionBarActivity {
 
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mProgressBar.setVisibility(View.INVISIBLE);
+
+
 
         //Remove ActionBar
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
@@ -85,9 +89,7 @@ public class LoginActivity extends ActionBarActivity {
                             if(e == null) {
                                 //success
 
-
-
-                                //update parseinstallation afther login success
+                                //update parse installation after login success
                                 SoShopBetaApplication.updateParseInstallation(user);
 
                                 startMainFeed();
@@ -124,19 +126,76 @@ public class LoginActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
 
-                onFacebookLogInButtonClicked();
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                Collection<String> permissions = Arrays.asList("email","basic_info");
+
+                ParseFacebookUtils.logInWithReadPermissionsInBackground(LoginActivity.this, permissions, new LogInCallback() {
+                    @Override
+                    public void done(ParseUser user, ParseException e) {
+                        mProgressBar.setVisibility(View.INVISIBLE);
+
+                        if(user == null ){
+                            Log.d("MyApp", "Uh oh. The user cancelled the Facebook login.");
+                            Log.d("MyApp", e.getLocalizedMessage());
+                        } else if (user.isNew()) {
+                            Log.d("MyApp", "User signed up and logged in through Facebook!");
+
+                            signUpWithFacebook();
+
+
+                        } else {
+                            Log.d("MyApp", "User logged in through Facebook!");
+
+                            if (facebookUserIsVerified()){
+
+                                startMainFeed();
+
+                            } else {
+
+                                signUpWithFacebook();
+
+                            }
+
+
+                        }
+
+
+
+                    }
+                } );
+
+
+
 
             }
         });
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        ParseFacebookUtils.finishAuthentication(requestCode, resultCode, data);
+    private Boolean facebookUserIsVerified() {
+
+        boolean verify = false;
+
+        ParseUser user = ParseUser.getCurrentUser();
+        String email = user.getString(ParseConstants.KEY_USER_EMAIL);
+        String firstName = user.getString(ParseConstants.KEY_FIRST_NAME);
+        String lastName = user.getString(ParseConstants.KEY_LAST_NAME);
+
+        if (email == null || firstName == null || lastName == null){
+
+            verify = false;
+
+        } else {
+
+            verify = true;
+        }
+
+
+        return verify;
 
     }
+
 
     private void startMainFeed() {
         Intent intent = new Intent(this, MainActivity.class);
@@ -147,28 +206,18 @@ public class LoginActivity extends ActionBarActivity {
         startActivity(intent);
     }
 
-    private void onFacebookLogInButtonClicked() {
+    private void signUpWithFacebook (){
+        Intent intent = new Intent(LoginActivity.this, SignUpWithFaceBookActivity.class);
+        startActivity(intent);
 
-        ParseFacebookUtils.logIn(Arrays.asList("email", ParseFacebookUtils.Permissions.Friends.ABOUT_ME),this,new LogInCallback() {
-            @Override
-            public void done(ParseUser user, ParseException e) {
+    }
 
-                if (user == null) {
-                    Log.d(TAG, "Uh oh. The user cancelled the Facebook login.");
-                    Toast.makeText(LoginActivity.this, "ParseUser return Null" ,Toast.LENGTH_SHORT).show();
 
-                } else if (user.isNew()) {
-                    Log.d(TAG, "User signed up and logged in through Facebook!");
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        ParseFacebookUtils.onActivityResult(requestCode, resultCode, data);
 
-                    startMainFeed();
-                } else {
-                    Log.d(TAG, "User logged in through Facebook!");
-
-                    startMainFeed();
-                }
-
-            }
-        });
     }
 
 

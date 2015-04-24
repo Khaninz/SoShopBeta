@@ -38,6 +38,7 @@ public final class ParseConstants {
     public static final String KEY_RELATION_NOSHOP_VOTE = "voteNoShopByUser"; // post that user have vote Noshop
     public static final String KEY_FIRST_NAME = "firstName";
     public static final String KEY_LAST_NAME = "lastName";
+    public static final String KEY_USER_EMAIL = "email";
 
     //CLASS COMMENT
     public static final String CLASS_COMMENT = "Comment";

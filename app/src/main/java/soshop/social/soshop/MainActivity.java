@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
 
 import java.security.MessageDigest;
@@ -59,6 +60,8 @@ public class MainActivity extends ActionBarActivity
         }
         //END: Log for facebook key hash
 
+        ParseFacebookUtils.initialize(MainActivity.this);
+
         //START: CHECK IF THERE IS CURRENT USER LOGIN IN.
         ParseUser currentUser = ParseUser.getCurrentUser();
         if (currentUser == null) {
@@ -80,6 +83,8 @@ public class MainActivity extends ActionBarActivity
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
     }
+
+
 
     private void navigateToLogin() {
         Intent intent = new Intent(this, LoginActivity.class);

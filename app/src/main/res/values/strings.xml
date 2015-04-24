@@ -2,6 +2,8 @@
 <resources>
 
     <string name="facebook_app_id">338090816379469</string>
+
+
     <string name="app_name">SoShopBeta</string>
     <string name="title_section1">SoShop Feed</string>
     <string name="title_section2">Friends</string>
