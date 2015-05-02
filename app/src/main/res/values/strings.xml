@@ -22,6 +22,7 @@
     <string name="login_error_title">Error logging in</string>
     <string name="action_logout">Log out</string>
     <string name="title_activity_sign_up">SignUpActivity</string>
+    <string name="title_activity_sign_up_with_facebook">SignUpWithFacebookActivity</string>
     <string name="sign_up_header">Sign Up</string>
     <string name="sign_up_button_label">Sign Up!</string>
     <string name="confirm_password_edit_text_hint">Confirm password</string>

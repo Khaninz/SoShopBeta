@@ -11,9 +11,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.parse.ParseException;
 import com.parse.ParseUser;
-import com.parse.SignUpCallback;
+import com.parse.SaveCallback;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import soshop.social.soshop.Utils.ParseConstants;
 
@@ -23,10 +29,15 @@ public class SignUpWithFaceBookActivity extends ActionBarActivity {
     protected EditText mEmaiAsUserEditText;
     protected EditText mPasswordEditText;
     protected EditText mConfirmPasswordEditText;
-    protected EditText mFirstname;
-    protected EditText mLastName;
+    protected EditText mFirstNameEditText;
+    protected EditText mLastNameEditText;
     protected Button mSignUpButton;
     protected ProgressBar mProgressBar;
+
+    protected String mEmail;
+    protected String mFirstName;
+    protected String mLastName;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +50,8 @@ public class SignUpWithFaceBookActivity extends ActionBarActivity {
             actionBar.hide();
         }
 
-        mFirstname = (EditText) findViewById(R.id.firstNameEditText);
-        mLastName = (EditText) findViewById(R.id.lastNameEditText);
+        mFirstNameEditText = (EditText) findViewById(R.id.firstNameEditText);
+        mLastNameEditText = (EditText) findViewById(R.id.lastNameEditText);
         mEmaiAsUserEditText = (EditText) findViewById(R.id.emailAsUserNameEditText);
         mPasswordEditText = (EditText) findViewById(R.id.passwordEditText);
         mConfirmPasswordEditText = (EditText) findViewById(R.id.confirmPasswordEditText);
@@ -49,14 +60,23 @@ public class SignUpWithFaceBookActivity extends ActionBarActivity {
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mProgressBar.setVisibility(View.INVISIBLE);
 
+        mFirstNameEditText.setEnabled(false);
+        mLastNameEditText.setEnabled(false);
+        mEmaiAsUserEditText.setEnabled(false);
+
+        getBasicInfoFromFacebook();
+
+
+
+
         mSignUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String emailAsUser = mEmaiAsUserEditText.getText().toString().toLowerCase();
                 String password = mPasswordEditText.getText().toString();
                 String confirmPassword = mConfirmPasswordEditText.getText().toString();
-                String firstName = mFirstname.getText().toString();
-                String lastName = mLastName.getText().toString();
+                String firstName = mFirstNameEditText.getText().toString();
+                String lastName = mLastNameEditText.getText().toString();
 
 
                 //trim to delete white space.
@@ -79,28 +99,16 @@ public class SignUpWithFaceBookActivity extends ActionBarActivity {
                     //check that two field of password is match
                     if (password.equals(confirmPassword)) {
 
-                        mProgressBar.setVisibility(View.VISIBLE);
+                        ParseUser currentUser = ParseUser.getCurrentUser();
+                        currentUser.setEmail(emailAsUser);
+                        currentUser.setUsername(emailAsUser);
+                        currentUser.put(ParseConstants.KEY_FIRST_NAME, firstName );
+                        currentUser.put(ParseConstants.KEY_LAST_NAME, lastName);
 
-                        //create new user in from Parse library
-                        ParseUser newUser = new ParseUser();
-                        newUser.setUsername(emailAsUser);
-                        newUser.setPassword(password);
-                        newUser.setEmail(emailAsUser);
-                        newUser.put(ParseConstants.KEY_FIRST_NAME, firstName);
-                        newUser.put(ParseConstants.KEY_LAST_NAME, lastName);
-
-                        //sign up perform like Async task method
-                        newUser.signUpInBackground(new SignUpCallback() {
+                        currentUser.saveInBackground(new SaveCallback() {
                             @Override
                             public void done(ParseException e) {
-
-                                mProgressBar.setVisibility(View.INVISIBLE);
-
-                                if (e == null) {
-                                    //Success!
-
-                                    //update parseinstallation afther login success
-                                    SoShopBetaApplication.updateParseInstallation(ParseUser.getCurrentUser());
+                                if (e ==null){
 
                                     Intent intent = new Intent(SignUpWithFaceBookActivity.this, MainActivity.class);
                                     //ADD FLAG SO USER CANNOT PRESS BACK TO SIGN UP ACTIVITY AGAIN
@@ -109,8 +117,9 @@ public class SignUpWithFaceBookActivity extends ActionBarActivity {
 
                                     startActivity(intent);
 
-                                } else {
 
+                                } else {
+                                    //save name failed try again.
                                     AlertDialog.Builder builder = new AlertDialog.Builder(SignUpWithFaceBookActivity.this);
                                     builder.setMessage(e.getMessage());
                                     builder.setTitle(R.string.singup_error_title);
@@ -122,6 +131,51 @@ public class SignUpWithFaceBookActivity extends ActionBarActivity {
                                 }
                             }
                         });
+
+
+//                        mProgressBar.setVisibility(View.VISIBLE);
+//
+//                        //create new user in from Parse library
+//                        ParseUser newUser = new ParseUser();
+//                        newUser.setUsername(emailAsUser);
+//                        newUser.setPassword(password);
+//                        newUser.setEmail(emailAsUser);
+//                        newUser.put(ParseConstants.KEY_FIRST_NAME, firstName);
+//                        newUser.put(ParseConstants.KEY_LAST_NAME, lastName);
+//
+//                        //sign up perform like Async task method
+//                        newUser.signUpInBackground(new SignUpCallback() {
+//                            @Override
+//                            public void done(ParseException e) {
+//
+//                                mProgressBar.setVisibility(View.INVISIBLE);
+//
+//                                if (e == null) {
+//                                    //Success!
+//
+//                                    //update parseinstallation afther login success
+//                                    SoShopBetaApplication.updateParseInstallation(ParseUser.getCurrentUser());
+//
+//                                    Intent intent = new Intent(SignUpWithFaceBookActivity.this, MainActivity.class);
+//                                    //ADD FLAG SO USER CANNOT PRESS BACK TO SIGN UP ACTIVITY AGAIN
+//                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//
+//                                    startActivity(intent);
+//
+//                                } else {
+//
+//                                    AlertDialog.Builder builder = new AlertDialog.Builder(SignUpWithFaceBookActivity.this);
+//                                    builder.setMessage(e.getMessage());
+//                                    builder.setTitle(R.string.singup_error_title);
+//                                    builder.setPositiveButton(android.R.string.ok, null);
+//
+//                                    AlertDialog dialog = builder.create();
+//                                    dialog.show();
+//
+//                                }
+//                            }
+//                        });
 
 
                     } else {
@@ -139,6 +193,42 @@ public class SignUpWithFaceBookActivity extends ActionBarActivity {
 
             }
         });
+
+    }
+
+    private void getBasicInfoFromFacebook() {
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+
+        GraphRequest request = GraphRequest.newMeRequest(
+                accessToken,
+                new GraphRequest.GraphJSONObjectCallback() {
+                    @Override
+                    public void onCompleted(JSONObject object, GraphResponse response) {
+                        // Application code
+                        try {
+                            String email = object.getString("email");
+                            String name = object.getString("name");
+                            String firstName = object.getString("first_name");
+                            String lastName = object.getString("last_name");
+//                                    String birthday = object.getString("birthday");
+//                                    String gender = object.getString("gender");
+
+                            mEmaiAsUserEditText.setText(email);
+                            mFirstNameEditText.setText(firstName);
+                            mLastNameEditText.setText(lastName);
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+                });
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id,name,link,email, birthday, gender, first_name, last_name");
+        request.setParameters(parameters);
+        request.executeAsync();
 
     }
 

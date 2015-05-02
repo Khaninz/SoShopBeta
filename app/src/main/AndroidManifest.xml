@@ -67,6 +67,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="soshop.social.soshop.LoginActivity" />
         </activity>
+
+        <activity
+            android:name=".SignUpWithFaceBookActivity"
+            android:label="@string/title_activity_sign_up_with_facebook"
+            android:parentActivityName=".LoginActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="soshop.social.soshop.LoginActivity" />
+
+
+        </activity>
         <activity
             android:name=".PostActivity"
             android:label="@string/title_activity_post"

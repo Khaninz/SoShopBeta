@@ -17,5 +17,8 @@
     <dimen name="number_top_margin">20dp</dimen>
     <dimen name="number_horizontal_margin">53dp</dimen>
 
+    <!--MainFeedPage-->
+    <dimen name="camera_button_size">75dp</dimen>
+
 
 </resources>

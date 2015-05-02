@@ -125,7 +125,10 @@
         android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:focusableInTouchMode="false" />
+        android:background="@drawable/main_buttons"
+        android:drawableLeft="@drawable/comment_button_icon"
+        android:textColor="@color/button_text_color"
+        />
 
     <Button
         android:id="@+id/soShopButton"
@@ -133,7 +136,11 @@
         android:layout_alignTop="@+id/commentButton"
         android:layout_toLeftOf="@+id/commentButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@drawable/main_buttons"
+        android:drawableLeft="@drawable/soshop_button_icon"
+
+        android:textColor="@color/button_text_color"/>
 
     <Button
         android:id="@+id/noShopButton"
@@ -141,7 +148,10 @@
         android:layout_alignTop="@+id/commentButton"
         android:layout_toRightOf="@+id/commentButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@drawable/main_buttons"
+        android:drawableLeft="@drawable/noshop_button_icon"
+        android:textColor="@color/button_text_color"/>
 
     <TextView
         android:text="(0)"
