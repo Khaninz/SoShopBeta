@@ -12,4 +12,9 @@
     <color name="button_color_pressed">#aaaaaa</color>
     <color name="button_color_focused">#cccccc</color>
     <color name="button_text_color">#5e5e5e</color>
+
+    <!--Each feed item-->
+    <color name="divider_color">#aaa</color>
+
+
 </resources>
